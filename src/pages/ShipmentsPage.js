@@ -1,38 +1,51 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
 import "../styles/shipments.css";
-
-const shipments = [
-  {
-    id: "SHP1001",
-    origin: "Mumbai",
-    destination: "Delhi",
-    status: "In Transit",
-    date: "2025-05-13",
-  },
-  {
-    id: "SHP1002",
-    origin: "Guwahati",
-    destination: "Kolkata",
-    status: "Delivered",
-    date: "2025-05-12",
-  },
-  {
-    id: "SHP1003",
-    origin: "Bangalore",
-    destination: "Chennai",
-    status: "Delayed",
-    date: "2025-05-11",
-  },
-  {
-    id: "SHP1004",
-    origin: "Ahmedabad",
-    destination: "Hyderabad",
-    status: "Pending Pickup",
-    date: "2025-05-14",
-  },
-];
+import apiService from '../services/api.service';
 
 const ShipmentsPage = () => {
+  const [shipments, setShipments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all'); // all, pending, in-transit, delivered
+
+  useEffect(() => {
+    fetchShipments();
+  }, [filter]);
+
+  const fetchShipments = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getBookings();
+      setShipments(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch shipments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (shipmentId, newStatus) => {
+    try {
+      await apiService.updateBooking(shipmentId, { status: newStatus });
+      // Refresh the shipments list
+      fetchShipments();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update shipment status');
+    }
+  };
+
+  const handleDelete = async (shipmentId) => {
+    if (window.confirm('Are you sure you want to delete this shipment?')) {
+      try {
+        await apiService.deleteBooking(shipmentId);
+        // Refresh the shipments list
+        fetchShipments();
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete shipment');
+      }
+    }
+  };
+
   return (
     <div className="shipments-container">
       <header className="shipments-header">

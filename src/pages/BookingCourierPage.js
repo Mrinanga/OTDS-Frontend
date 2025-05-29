@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import apiService from '../services/api.service';
 import BookingModal from '../components/BookingPage/BookingModal';
 import '../styles/booking.css';
 
@@ -23,9 +25,20 @@ const initialDummyData = [
   },
 ];
 
-const CourierBookings = () => {
+const BookingCourierPage = () => {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState(initialDummyData);
   const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    pickupAddress: '',
+    deliveryAddress: '',
+    packageType: '',
+    weight: '',
+    dimensions: '',
+    specialInstructions: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleNewBooking = (data) => {
     const newBooking = {
@@ -35,6 +48,32 @@ const CourierBookings = () => {
     };
     setBookings([newBooking, ...bookings]);
     setShowModal(false);
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await apiService.createBooking(formData);
+      // Handle successful booking
+      const { bookingId, trackingNumber } = response.data;
+      
+      // Show success message or redirect to tracking page
+      navigate(`/tracking/${trackingNumber}`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create booking. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,4 +131,4 @@ const CourierBookings = () => {
   );
 };
 
-export default CourierBookings;
+export default BookingCourierPage;

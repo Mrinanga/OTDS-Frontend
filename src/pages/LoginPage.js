@@ -2,32 +2,46 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../App";
 import "../styles/LoginPage.css";
+import apiService from '../services/api.service';
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("admin");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
 
-    if (
-      (role === "admin" && username === "admin" && password === "admin") ||
-      (role === "branch" && username === "branch" && password === "branch")
-    ) {
-      auth.setIsAuthenticated(true);
-      auth.setRole(role);
-      navigate(role === "admin" ? "/dashboard-admin" : "/dashboard-branch");
-    } else {
-      setError(
-        role === "admin"
-          ? "Invalid credentials. Try admin/admin."
-          : "Invalid credentials. Try branch/branch."
-      );
+    try {
+      const response = await apiService.login({ email: username, password });
+      const { token, refreshToken, user } = response.data;
+      
+      // Store tokens
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+      
+      // Store user data if needed
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (user.role === 'branch') {
+        navigate('/branch/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,11 +104,11 @@ export default function LoginPage() {
               required
             />
 
-            <button type="submit" className="login-btn">Login</button>
+            <button type="submit" className="login-btn" disabled={loading}>Login</button>
             <div className="or">OR</div>
             <button type="button" className="otp-btn">Login with OTP</button>
             <p className="signup-link">
-              Don’t have an account? <a href="#">Sign up Now</a>
+              Don't have an account? <a href="#">Sign up Now</a>
             </p>
           </form>
         </div>

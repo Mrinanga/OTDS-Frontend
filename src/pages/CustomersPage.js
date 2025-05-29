@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/CustomersPage.css";
+import apiService from '../services/api.service';
 
 const initialCustomers = [
   {
@@ -23,10 +24,74 @@ const initialCustomers = [
 ];
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState(initialCustomers);
-  const [search, setSearch] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editCustomer, setEditCustomer] = useState(null);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: ''
+  });
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getProfile();
+      setCustomers(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch customers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (customer) => {
+    setSelectedCustomer(customer);
+    setFormData({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (selectedCustomer) {
+        await apiService.updateProfile(formData);
+      } else {
+        await apiService.register(formData);
+      }
+      fetchCustomers();
+      setSelectedCustomer(null);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        address: ''
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save customer data');
+    }
+  };
+
+  const handleDelete = async (customerId) => {
+    if (window.confirm('Are you sure you want to delete this customer?')) {
+      try {
+        await apiService.deleteCustomer(customerId);
+        fetchCustomers();
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete customer');
+      }
+    }
+  };
 
   const handleSearch = (e) => setSearch(e.target.value);
 
@@ -37,41 +102,13 @@ export default function CustomersPage() {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleAddCustomer = () => {
-    setEditCustomer(null);
-    setModalOpen(true);
-  };
-
-  const handleEdit = (customer) => {
-    setEditCustomer(customer);
-    setModalOpen(true);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure to delete this customer?")) {
-      setCustomers(customers.filter((cust) => cust.id !== id));
-    }
-  };
-
-  const handleSave = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const newCustomer = {
-      id: editCustomer ? editCustomer.id : Date.now(),
-      name: form.name.value,
-      phone: form.phone.value,
-      email: form.email.value,
-      address: form.address.value,
-      status: form.status.value,
-      orders: editCustomer ? editCustomer.orders : 0,
-    };
-    if (editCustomer) {
-      setCustomers(
-        customers.map((c) => (c.id === newCustomer.id ? newCustomer : c))
-      );
-    } else {
-      setCustomers([newCustomer, ...customers]);
-    }
-    setModalOpen(false);
+    setSelectedCustomer(null);
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      address: ''
+    });
   };
 
   const toggleStatus = (id) => {
@@ -189,44 +226,44 @@ export default function CustomersPage() {
         </table>
       </div>
 
-      {modalOpen && (
+      {selectedCustomer && (
         <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleSave}>
-            <h3>{editCustomer ? "Edit Customer" : "Add Customer"}</h3>
+          <form className="modal" onSubmit={handleSubmit}>
+            <h3>{selectedCustomer ? "Edit Customer" : "Add Customer"}</h3>
             <input
               name="name"
-              defaultValue={editCustomer?.name}
+              defaultValue={selectedCustomer?.name}
               required
               placeholder="Full Name"
             />
             <input
               name="phone"
-              defaultValue={editCustomer?.phone}
+              defaultValue={selectedCustomer?.phone}
               required
               placeholder="Phone"
             />
             <input
               name="email"
-              defaultValue={editCustomer?.email}
+              defaultValue={selectedCustomer?.email}
               required
               placeholder="Email"
             />
             <input
               name="address"
-              defaultValue={editCustomer?.address}
+              defaultValue={selectedCustomer?.address}
               required
               placeholder="Address"
             />
             <select
               name="status"
-              defaultValue={editCustomer?.status || "Active"}
+              defaultValue={selectedCustomer?.status || "Active"}
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
             <div className="modal-actions">
               <button type="submit">Save</button>
-              <button type="button" onClick={() => setModalOpen(false)}>
+              <button type="button" onClick={() => setSelectedCustomer(null)}>
                 Cancel
               </button>
             </div>
