@@ -1,0 +1,97 @@
+.sidebar {
+  width: 15%;
+  margin-top: 4%;
+  background: linear-gradient(180deg, #0a1d37 0%, #122b4f 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.sidebar-logo {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffffff;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.sidebar-nav.sidebar-scrollable {
+  max-height: calc(100vh - 60px); /* Adjust 60px if your logo/header is taller */
+  overflow-y: auto;
+  padding-right: 4px; /* Optional: for scrollbar space */
+  scrollbar-width: thick;              /* Firefox */
+  scrollbar-color: #1e90ff #122b4f;    /* Firefox */
+  margin-bottom: 30%;
+}
+
+/* Chrome, Edge, Safari */
+.sidebar-nav.sidebar-scrollable::-webkit-scrollbar {
+  width: 5px;
+  border-radius: 8px;
+  background: #122b4f;
+}
+
+.sidebar-nav.sidebar-scrollable::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #1e90ff 40%, #0a1d37 100%);
+  border-radius: 8px;
+  border: 2px solid #122b4f;
+}
+
+.sidebar-nav.sidebar-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #1e90ff;
+}
+
+.sidebar-link {
+  color: #cdd6e0;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.sidebar-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 4px;
+  background-color: transparent;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.sidebar-link:hover::before,
+.sidebar-link.active::before {
+  background-color: #1e90ff;
+}

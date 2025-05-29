@@ -1,0 +1,93 @@
+/* CourierRateCalculator.css */
+
+.rate-calculator {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.rate-calculator h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #002147;
+  font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+input,
+select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #007bff;
+  background: #fff;
+}
+
+.checkbox-group {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: #f1f5ff;
+  border-radius: 10px;
+  border: 1px solid #d0d7e8;
+}
+
+.checkbox-group label {
+  font-size: 14px;
+  color: #333;
+}
+
+.calculate-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #0056b3;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.calculate-btn:hover {
+  background-color: #003d80;
+}
+
+.result-box {
+  margin-top: 30px;
+  background: #e9f5e9;
+  border-left: 6px solid #28a745;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.result-box h3 {
+  margin-top: 0;
+  color: #2e7d32;
+}
+
+.result-box p {
+  margin: 8px 0;
+  font-size: 15px;
+}

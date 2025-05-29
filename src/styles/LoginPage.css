@@ -1,0 +1,170 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(to right, #103164, #673ab7, #0d47a1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container {
+  display: flex;
+  width: 1000px;
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Left Panel */
+.left-panel {
+  flex: 1;
+  background: linear-gradient(to bottom, #0d47a1, #512da8);
+  color: white;
+  padding: 40px;
+  position: relative;
+}
+
+.left-panel h2 {
+  font-size: 22px;
+  margin-bottom: 70px;
+  color: white;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 50px;
+}
+
+.step span {
+  background: white;
+  color: #0d47a1;
+  font-weight: bold;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.step-title {
+  font-weight: bold;
+  margin: 0;
+}
+
+.step-desc {
+  font-size: 13px;
+  margin: 3px 0 0;
+}
+
+.delivery-image {
+  position: absolute;
+  bottom: 10px;
+  left: 20px;
+  width: 100px;
+}
+
+/* Right Panel */
+.right-panel {
+  flex: 1;
+  padding: 40px;
+}
+
+.logo {
+  display: block;
+  width: 180px;
+  margin: 0 auto 20px;
+}
+
+.right-panel h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form label {
+  font-weight: 600;
+  display: block;
+  margin-top: 15px;
+}
+
+form input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.error-text {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.password-field {
+  position: relative;
+}
+
+.eye-icon {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.forgot-link {
+  text-align: right;
+  margin-top: 5px;
+}
+
+.forgot-link a {
+  font-size: 13px;
+  color: #0d47a1;
+  text-decoration: none;
+}
+
+.login-btn {
+  width: 100%;
+  background-color: #2196f3;
+  color: white;
+  padding: 12px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.or {
+  text-align: center;
+  margin: 15px 0;
+  color: #666;
+}
+
+.otp-btn {
+  width: 100%;
+  border: 1px solid #aaa;
+  padding: 12px;
+  border-radius: 25px;
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.signup-link {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.signup-link a {
+  color: #0d47a1;
+  text-decoration: none;
+}

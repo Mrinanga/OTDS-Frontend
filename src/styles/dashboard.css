@@ -1,0 +1,281 @@
+/* dashboard.css */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 0;
+  color: #374151;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dashboard-container {
+  padding: 0rem 2rem 4rem 2rem;
+  min-height: 100vh;
+  background-color: #f4f6f8;
+}
+
+.dashboard-header {
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.dashboard-header p {
+  color: #6b7280;
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.75rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  padding: 2rem 2.2rem;
+  border-radius: 14px;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1.2px;
+  opacity: 0.9;
+  margin-bottom: 0.65rem;
+  font-weight: 600;
+  font-family: 'Segoe UI Semibold', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card-count {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+/* Card Colors */
+.card-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.card-yellow {
+  background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
+  color: #1e1e1e;
+}
+
+.card-green {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+}
+
+.card-red {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+}
+
+.dashboard-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-main {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chart-section,
+.activity-section {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  transition: box-shadow 0.3s ease;
+}
+
+.chart-section:hover,
+.activity-section:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+}
+
+.chart-section h2,
+.activity-section h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: #1f2937;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.activity-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.activity-item {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1.25rem;
+  margin-bottom: 0.9rem;
+  font-size: 1rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.tracking-section {
+  margin-top: 3rem;
+  background: #ffffff;
+  padding: 1.75rem 2rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 40px;
+}
+
+.tracking-section h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.tracking-inputs {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.tracking-inputs input {
+  padding: 0.65rem 1.2rem;
+  flex: 1;
+  border: 1.8px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  transition: border-color 0.3s ease;
+  outline-offset: 2px;
+}
+
+.tracking-inputs input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.tracking-inputs button {
+  padding: 0.65rem 1.8rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tracking-inputs button:hover {
+  background-color: #2563eb;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.6);
+}
+
+.tracking-card {
+  background-color: #f9fafb;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  font-size: 1.05rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.tracking-info {
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+
+.tracking-inputs {
+  display: flex;
+  gap: 10px;
+  max-width: 400px;
+}
+
+.tracking-input {
+  flex-grow: 1;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.track-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  background-color: #4F46E5;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.status.delivered {
+  color: green;
+  font-weight: 600;
+}
+
+.status.in-transit {
+  color: #F59E0B;
+  font-weight: 600;
+}
+
+.status.out-for-delivery {
+  color: blue;
+  font-weight: 600;
+}
+
+.modal-overlay {
+  position: fixed; /* must be fixed or absolute */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* overlay color */
+  display: flex; /* for centering modal content */
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* make sure on top */
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}

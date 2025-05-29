@@ -1,0 +1,203 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-box.large {
+  background: #ffffff;
+  width: 90%;
+  height: 90%;
+  border-radius: 20px;
+  padding: 35px 40px;
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  max-height: 95vh;
+  animation: fadeUp 0.3s ease-out;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e2a38;
+  margin-bottom: 25px;
+  border-left: 5px solid #0078d4;
+  padding-left: 15px;
+}
+
+.booking-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 25px;
+}
+
+.booking-form h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0078d4;
+  grid-column: span 2;
+  margin-top: 35px;
+  margin-bottom: 5px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 4px;
+}
+
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
+  width: 85%;
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background-color: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.booking-form input:focus,
+.booking-form select:focus,
+.booking-form textarea:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+  background-color: #ffffff;
+  outline: none;
+}
+
+.booking-form textarea {
+  resize: vertical;
+  min-height: 90px;
+  grid-column: span 2;
+}
+
+.booking-form label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* Modern checkbox style */
+.booking-form label.checkbox-label {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+  margin-top: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.booking-form input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #fff;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.booking-form input[type="checkbox"]:checked {
+  background-color: #0078d4;
+  border-color: #0078d4;
+}
+
+.booking-form input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.booking-form input[type="checkbox"]:checked::after {
+  opacity: 1;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  grid-column: span 2;
+}
+
+.modal-cancel,
+.modal-submit {
+  padding: 12px 28px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.modal-cancel {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.modal-cancel:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.modal-submit {
+  background-color: #0078d4;
+  color: #ffffff;
+}
+
+.modal-submit:hover {
+  background-color: #0064ba;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .booking-form {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-form textarea,
+  .booking-form label,
+  .modal-actions {
+    grid-column: span 1;
+  }
+
+  .booking-form label.checkbox-label {
+    grid-column: span 1;
+  }
+}

@@ -1,0 +1,33 @@
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafafa;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.activity-list li:hover {
+  background: #f1f5ff;
+}
+
+.activity-list strong {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+  flex: 1;
+}
+
+.activity-list span {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}

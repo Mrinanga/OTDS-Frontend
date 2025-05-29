@@ -1,0 +1,107 @@
+.notifications-container {
+  padding: 30px;
+  background-color: #f9fafb;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.notifications-header h2 {
+  font-size: 24px;
+  color: #0a1d37;
+}
+
+.clear-btn {
+  background: #e11d48;
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.clear-btn:hover {
+  background: #be123c;
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #f1f5f9;
+}
+
+.notification-item.unread {
+  border-left: 5px solid #2563eb;
+}
+
+.notification-item.read {
+  opacity: 0.7;
+}
+
+.icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.icon.info {
+  color: #2563eb;
+}
+
+.icon.success {
+  color: #10b981;
+}
+
+.icon.warning {
+  color: #f59e0b;
+}
+
+.icon.error {
+  color: #ef4444;
+}
+
+.content {
+  flex: 1;
+}
+
+.content p {
+  margin: 0;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.content small {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.status-pill {
+  font-size: 12px;
+  background: #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 10px;
+  color: #374151;
+}

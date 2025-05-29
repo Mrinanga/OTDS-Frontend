@@ -1,0 +1,109 @@
+.courier-billing {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.courier-billing h2 {
+  text-align: center;
+  color: #1a237e;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f5f7fa;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section h3 {
+  margin-bottom: 20px;
+  color: #3f51b5;
+  font-size: 20px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.section input,
+.section select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.section input:focus,
+.section select:focus {
+  border-color: #3f51b5;
+  outline: none;
+  background-color: #eef2ff;
+}
+
+.invoice table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.invoice td {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.invoice td:first-child {
+  font-weight: 500;
+  color: #444;
+}
+
+.invoice .total td {
+  font-weight: bold;
+  font-size: 18px;
+  color: #1a237e;
+  border-top: 2px solid #3f51b5;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.actions button {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.actions button:hover {
+  background-color: #303f9f;
+}
+
+@media (max-width: 768px) {
+  .courier-billing {
+    padding: 20px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
