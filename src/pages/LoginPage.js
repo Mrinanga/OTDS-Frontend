@@ -5,14 +5,13 @@ import "../styles/LoginPage.css";
 import apiService from '../services/api.service';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("admin");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const auth = useContext(AuthContext);
+  const { setIsAuthenticated, setRole } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,25 +19,36 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await apiService.login({ email: username, password });
-      const { token, refreshToken, user } = response.data;
+      const response = await apiService.login({ email, password });
       
-      // Store tokens
+      if (!response.data?.data) {
+        setError('Invalid server response format');
+        return;
+      }
+
+      const { token, user } = response.data.data;
+
+      if (!token || !user) {
+        setError('Invalid response format from server');
+        return;
+      }
+
+      // Store auth data in localStorage
       localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken);
-      
-      // Store user data if needed
       localStorage.setItem('user', JSON.stringify(user));
       
-      // Redirect based on user role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else if (user.role === 'branch') {
-        navigate('/branch/dashboard');
+      // Update auth context
+      setIsAuthenticated(true);
+      setRole(user.role);
+      
+      // Navigate based on role
+      if (user.role === 'branch_office') {
+        navigate('/dashboard-branch', { replace: true });
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard-admin', { replace: true });
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -81,17 +91,12 @@ export default function LoginPage() {
           <h2>Login</h2>
           {error && <div className="error-text">{error}</div>}
           <form onSubmit={handleSubmit}>
-            <label>Role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="admin">Admin</option>
-              <option value="branch">Branch Office</option>
-            </select>
-
-            <label>Username</label>
+            <label>Email</label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               autoFocus
               required
             />
@@ -101,10 +106,13 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
             />
 
-            <button type="submit" className="login-btn" disabled={loading}>Login</button>
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
             <div className="or">OR</div>
             <button type="button" className="otp-btn">Login with OTP</button>
             <p className="signup-link">

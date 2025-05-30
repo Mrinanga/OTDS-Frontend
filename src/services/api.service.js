@@ -16,45 +16,23 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        console.log('Request:', config);
         return config;
     },
     (error) => {
+        console.error('Request Error:', error);
         return Promise.reject(error);
     }
 );
 
 // Response interceptor for handling common errors
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log('Response:', response);
+        return response;
+    },
     async (error) => {
-        const originalRequest = error.config;
-
-        // Handle 401 Unauthorized errors
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                // Try to refresh the token
-                const refreshToken = localStorage.getItem('refreshToken');
-                const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.REFRESH_TOKEN, {
-                    refreshToken
-                });
-
-                const { token } = response.data;
-                localStorage.setItem('token', token);
-
-                // Retry the original request with new token
-                originalRequest.headers.Authorization = `Bearer ${token}`;
-                return api(originalRequest);
-            } catch (refreshError) {
-                // If refresh token fails, logout user
-                localStorage.removeItem('token');
-                localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
-        }
-
+        console.error('Response Error:', error.response || error);
         return Promise.reject(error);
     }
 );
@@ -62,7 +40,17 @@ api.interceptors.response.use(
 // API service methods
 const apiService = {
     // Auth methods
-    login: (credentials) => api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, credentials),
+    login: async (credentials) => {
+        try {
+            console.log('Login attempt with:', credentials);
+            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, credentials);
+            console.log('Login response:', response);
+            return response;
+        } catch (error) {
+            console.error('Login error:', error.response || error);
+            throw error;
+        }
+    },
     register: (userData) => api.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, userData),
     logout: () => api.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT),
 
@@ -75,8 +63,10 @@ const apiService = {
 
     // Customer methods
     getProfile: () => api.get(API_CONFIG.ENDPOINTS.CUSTOMERS.PROFILE),
-    updateProfile: (profileData) => api.put(API_CONFIG.ENDPOINTS.CUSTOMERS.UPDATE, profileData),
+    updateProfile: (id, profileData) => api.put(`${API_CONFIG.ENDPOINTS.CUSTOMERS.UPDATE}/${id}`, profileData),
     getAddresses: () => api.get(API_CONFIG.ENDPOINTS.CUSTOMERS.ADDRESSES),
+    createCustomer: (customerData) => api.post(API_CONFIG.ENDPOINTS.CUSTOMERS.CREATE, customerData),
+    deleteCustomer: (id) => api.delete(`${API_CONFIG.ENDPOINTS.CUSTOMERS.PROFILE}/${id}`),
 
     // Tracking methods
     getTrackingStatus: (trackingNumber) => api.get(`${API_CONFIG.ENDPOINTS.TRACKING.STATUS}/${trackingNumber}`),

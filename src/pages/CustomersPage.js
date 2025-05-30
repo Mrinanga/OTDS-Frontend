@@ -27,6 +27,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -226,37 +227,52 @@ export default function CustomersPage() {
         </table>
       </div>
 
-      {selectedCustomer && (
+      {(selectedCustomer || selectedCustomer === null) && (
         <div className="modal-backdrop">
           <form className="modal" onSubmit={handleSubmit}>
             <h3>{selectedCustomer ? "Edit Customer" : "Add Customer"}</h3>
             <input
               name="name"
-              defaultValue={selectedCustomer?.name}
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
               placeholder="Full Name"
             />
             <input
               name="phone"
-              defaultValue={selectedCustomer?.phone}
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               required
               placeholder="Phone"
             />
             <input
               name="email"
-              defaultValue={selectedCustomer?.email}
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               required
               placeholder="Email"
             />
             <input
               name="address"
-              defaultValue={selectedCustomer?.address}
+              value={formData.address}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
               required
               placeholder="Address"
             />
             <select
               name="status"
-              defaultValue={selectedCustomer?.status || "Active"}
+              value={formData.status || "Active"}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>

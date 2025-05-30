@@ -4,20 +4,20 @@ const API_CONFIG = {
         AUTH: {
             LOGIN: '/auth/login',
             REGISTER: '/auth/register',
-            LOGOUT: '/auth/logout',
-            REFRESH_TOKEN: '/auth/refresh-token'
+            LOGOUT: '/auth/logout'
         },
         BOOKINGS: {
             CREATE: '/bookings/create',
-            LIST: '/bookings/list',
-            DETAILS: '/bookings/details',
-            UPDATE: '/bookings/update',
-            DELETE: '/bookings/delete'
+            LIST: '/bookings',
+            DETAILS: '/bookings',
+            UPDATE: '/bookings',
+            DELETE: '/bookings'
         },
         CUSTOMERS: {
-            PROFILE: '/customers/profile',
-            UPDATE: '/customers/update',
-            ADDRESSES: '/customers/addresses'
+            PROFILE: '/customers',
+            UPDATE: '/customers',
+            ADDRESSES: '/customers',
+            CREATE: '/customers/create'
         },
         TRACKING: {
             STATUS: '/tracking/status',
