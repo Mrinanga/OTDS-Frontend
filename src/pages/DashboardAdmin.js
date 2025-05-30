@@ -25,7 +25,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Dashboard data states
+  // Dashboard data states with default empty arrays
   const [statsCards, setStatsCards] = useState([]);
   const [bookingTrends, setBookingTrends] = useState([]);
   const [serviceTypes, setServiceTypes] = useState([]);
@@ -58,17 +58,33 @@ const DashboardPage = () => {
           apiService.getRecentActivities()
         ]);
 
-        // Update states with fetched data
-        setStatsCards(statsResponse.data.data);
-        setBookingTrends(trendsResponse.data.data);
-        setServiceTypes(servicesResponse.data.data);
-        setBranchPerformance(performanceResponse.data.data);
-        setDeliveryStatus(statusResponse.data.data);
-        setActivities(activitiesResponse.data.data);
+        console.log('Dashboard API Responses:', {
+          stats: statsResponse,
+          trends: trendsResponse,
+          services: servicesResponse,
+          performance: performanceResponse,
+          status: statusResponse,
+          activities: activitiesResponse
+        });
+
+        // Update states with fetched data, ensuring we have arrays
+        setStatsCards(statsResponse.data?.data || []);
+        setBookingTrends(trendsResponse.data?.data || []);
+        setServiceTypes(servicesResponse.data?.data || []);
+        setBranchPerformance(performanceResponse.data?.data || []);
+        setDeliveryStatus(statusResponse.data?.data || []);
+        setActivities(activitiesResponse.data?.data || []);
 
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
         setError('Failed to load dashboard data. Please try again later.');
+        // Set empty arrays for all data states in case of error
+        setStatsCards([]);
+        setBookingTrends([]);
+        setServiceTypes([]);
+        setBranchPerformance([]);
+        setDeliveryStatus([]);
+        setActivities([]);
       } finally {
         setLoading(false);
       }
@@ -113,12 +129,16 @@ const DashboardPage = () => {
       </header>
 
       <section className="cards-grid">
-        {statsCards.map((card, idx) => (
-          <div key={idx} className={`card card-${card.color}`}>
-            <div className="card-title">{card.title}</div>
-            <div className="card-count">{card.count}</div>
-          </div>
-        ))}
+        {statsCards && statsCards.length > 0 ? (
+          statsCards.map((card, idx) => (
+            <div key={idx} className={`card card-${card.color}`}>
+              <div className="card-title">{card.title}</div>
+              <div className="card-count">{card.count}</div>
+            </div>
+          ))
+        ) : (
+          <div className="no-data">No statistics available</div>
+        )}
       </section>
 
       <section className="tracking-section">
@@ -141,77 +161,94 @@ const DashboardPage = () => {
       <section className="charts-grid">
         <div className="chart-box">
           <h2>Daily Booking Trends</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={bookingTrends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="bookings" stroke="#4F46E5" />
-            </LineChart>
-          </ResponsiveContainer>
+          {bookingTrends && bookingTrends.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={bookingTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="bookings" stroke="#4F46E5" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="no-data">No booking trends available</div>
+          )}
         </div>
 
         <div className="chart-box">
           <h2>Service Type Distribution</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={serviceTypes}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                label
-              >
-                {serviceTypes.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {serviceTypes && serviceTypes.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={serviceTypes}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label
+                >
+                  {serviceTypes.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="no-data">No service type data available</div>
+          )}
         </div>
 
         <div className="chart-box">
           <h2>Branch Revenue Comparison</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={branchPerformance}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="branch" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="bookings" fill="#10B981" name="Bookings" />
-              <Bar dataKey="revenue" fill="#F59E0B" name="Revenue" />
-            </BarChart>
-          </ResponsiveContainer>
+          {branchPerformance && branchPerformance.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={branchPerformance}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="branch" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="bookings" fill="#10B981" name="Bookings" />
+                <Bar dataKey="revenue" fill="#F59E0B" name="Revenue" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="no-data">No branch performance data available</div>
+          )}
         </div>
 
         <div className="chart-box">
           <h2>Delivery Status</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={deliveryStatus}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#4F46E5" />
-            </BarChart>
-          </ResponsiveContainer>
+          {deliveryStatus && deliveryStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={deliveryStatus}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="status" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="count" fill="#4F46E5" name="Count" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="no-data">No delivery status data available</div>
+          )}
         </div>
       </section>
 
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button onClick={closeModal} className="modal-close-button">
-              &times;
-            </button>
-            {trackingInfo ? (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close-button" onClick={closeModal}>&times;</button>
+            {modalError ? (
+              <div className="error-text">{modalError}</div>
+            ) : (
               <div className="tracking-details">
                 <h3>Tracking Details</h3>
                 <div className="tracking-section">
@@ -266,8 +303,6 @@ const DashboardPage = () => {
                   </div>
                 )}
               </div>
-            ) : (
-              <p className="error-text">{modalError}</p>
             )}
           </div>
         </div>

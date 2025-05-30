@@ -58,7 +58,31 @@ const apiService = {
     },
 
     // Booking methods
-    createBooking: (bookingData) => api.post(API_CONFIG.ENDPOINTS.BOOKINGS.CREATE, bookingData),
+    createBooking: (bookingData) => {
+        return axios.post(`${API_CONFIG.BASE_URL}/bookings`, bookingData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    },
+
+    getAllBookings: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/bookings`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    getBookingByNumber: (bookingNumber) => {
+        return axios.get(`${API_CONFIG.BASE_URL}/bookings/${bookingNumber}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
     getBookings: () => api.get(API_CONFIG.ENDPOINTS.BOOKINGS.LIST),
     getBookingDetails: (bookingId) => api.get(`${API_CONFIG.ENDPOINTS.BOOKINGS.DETAILS}/${bookingId}`),
     updateBooking: (bookingId, bookingData) => api.put(`${API_CONFIG.ENDPOINTS.BOOKINGS.UPDATE}/${bookingId}`, bookingData),
@@ -85,12 +109,109 @@ const apiService = {
     createTicket: (ticketData) => api.post(API_CONFIG.ENDPOINTS.SUPPORT.CREATE_TICKET, ticketData),
 
     // Dashboard methods
-    getDashboardStats: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.STATS),
-    getBookingTrends: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.BOOKING_TRENDS),
-    getServiceTypes: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.SERVICE_TYPES),
-    getBranchPerformance: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.BRANCH_PERFORMANCE),
-    getDeliveryStatus: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.DELIVERY_STATUS),
-    getRecentActivities: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.RECENT_ACTIVITIES)
+    getDashboardStats: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/stats`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+    getBookingTrends: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/booking-trends`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+    getServiceTypes: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/service-types`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+    getBranchPerformance: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/branch-performance`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+    getDeliveryStatus: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/delivery-status`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+    getRecentActivities: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/recent-activities`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    // Branch related methods
+    getBranches: async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/branches`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+            throw error;
+        }
+    },
+
+    // Executive related methods
+    getExecutives: async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/executives`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching executives:', error);
+            throw error;
+        }
+    },
+
+    // Pickup assignment
+    assignPickup: async (bookingId, assignmentData) => {
+        try {
+            console.log('Making API call to assign pickup:', {
+                url: `${API_CONFIG.BASE_URL}/bookings/${bookingId}/assign-pickup`,
+                data: assignmentData
+            });
+
+            const response = await axios.post(
+                `${API_CONFIG.BASE_URL}/bookings/${bookingId}/assign-pickup`,
+                assignmentData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log('Assign pickup response:', response);
+            return response;
+        } catch (error) {
+            console.error('Error in assignPickup:', error.response || error);
+            throw error;
+        }
+    }
 };
 
 export default apiService;
