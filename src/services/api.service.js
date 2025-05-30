@@ -52,14 +52,17 @@ const apiService = {
         }
     },
     register: (userData) => api.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, userData),
-    logout: () => api.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT),
+    logout: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    },
 
     // Booking methods
     createBooking: (bookingData) => api.post(API_CONFIG.ENDPOINTS.BOOKINGS.CREATE, bookingData),
     getBookings: () => api.get(API_CONFIG.ENDPOINTS.BOOKINGS.LIST),
-    getBookingDetails: (id) => api.get(`${API_CONFIG.ENDPOINTS.BOOKINGS.DETAILS}/${id}`),
-    updateBooking: (id, bookingData) => api.put(`${API_CONFIG.ENDPOINTS.BOOKINGS.UPDATE}/${id}`, bookingData),
-    deleteBooking: (id) => api.delete(`${API_CONFIG.ENDPOINTS.BOOKINGS.DELETE}/${id}`),
+    getBookingDetails: (bookingId) => api.get(`${API_CONFIG.ENDPOINTS.BOOKINGS.DETAILS}/${bookingId}`),
+    updateBooking: (bookingId, bookingData) => api.put(`${API_CONFIG.ENDPOINTS.BOOKINGS.UPDATE}/${bookingId}`, bookingData),
+    cancelBooking: (bookingId) => api.post(`${API_CONFIG.ENDPOINTS.BOOKINGS.CANCEL}/${bookingId}`),
 
     // Customer methods
     getProfile: () => api.get(API_CONFIG.ENDPOINTS.CUSTOMERS.PROFILE),
@@ -69,7 +72,7 @@ const apiService = {
     deleteCustomer: (id) => api.delete(`${API_CONFIG.ENDPOINTS.CUSTOMERS.PROFILE}/${id}`),
 
     // Tracking methods
-    getTrackingStatus: (trackingNumber) => api.get(`${API_CONFIG.ENDPOINTS.TRACKING.STATUS}/${trackingNumber}`),
+    getTrackingStatus: (trackingId) => api.post('/dashboard/track', { tracking_id: trackingId }),
     getTrackingHistory: (trackingNumber) => api.get(`${API_CONFIG.ENDPOINTS.TRACKING.HISTORY}/${trackingNumber}`),
 
     // Payment methods
@@ -80,6 +83,14 @@ const apiService = {
     // Support methods
     getTickets: () => api.get(API_CONFIG.ENDPOINTS.SUPPORT.TICKETS),
     createTicket: (ticketData) => api.post(API_CONFIG.ENDPOINTS.SUPPORT.CREATE_TICKET, ticketData),
+
+    // Dashboard methods
+    getDashboardStats: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.STATS),
+    getBookingTrends: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.BOOKING_TRENDS),
+    getServiceTypes: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.SERVICE_TYPES),
+    getBranchPerformance: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.BRANCH_PERFORMANCE),
+    getDeliveryStatus: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.DELIVERY_STATUS),
+    getRecentActivities: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.RECENT_ACTIVITIES)
 };
 
-export default apiService; 
+export default apiService;

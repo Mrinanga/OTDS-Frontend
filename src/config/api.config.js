@@ -31,6 +31,14 @@ const API_CONFIG = {
         SUPPORT: {
             TICKETS: '/support/tickets',
             CREATE_TICKET: '/support/create-ticket'
+        },
+        DASHBOARD: {
+            STATS: '/dashboard/stats',
+            BOOKING_TRENDS: '/dashboard/booking-trends',
+            SERVICE_TYPES: '/dashboard/service-types',
+            BRANCH_PERFORMANCE: '/dashboard/branch-performance',
+            DELIVERY_STATUS: '/dashboard/delivery-status',
+            RECENT_ACTIVITIES: '/dashboard/recent-activities'
         }
     }
 };
