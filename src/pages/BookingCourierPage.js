@@ -26,9 +26,12 @@ const BookingCourierPage = () => {
     try {
       setLoading(true);
       const response = await apiService.getAllBookings();
+      console.log('All bookings response:', response);
       if (response.data && response.data.data) {
+        console.log('Setting bookings:', response.data.data);
         setBookings(response.data.data);
       } else {
+        console.log('No bookings data in response');
         setBookings([]);
       }
       setError('');
@@ -91,15 +94,27 @@ const BookingCourierPage = () => {
   };
 
   const handleRequestPickup = (booking) => {
-    try {
-      console.log('Selected booking:', booking);
-      setSelectedBooking(booking);
-      setShowPickupModal(true);
-    } catch (error) {
-      console.error('Error in handleRequestPickup:', error);
-      setError('Failed to open pickup request modal. Please try again.');
+    console.log('Selected booking for pickup:', booking);
+    
+    if (!booking?.booking_number) {
+      console.error('Invalid booking data:', booking);
+      setError('Invalid booking data: missing booking number');
+      return;
     }
+
+    // Set both states at once
+    setSelectedBooking(booking);
+    setShowPickupModal(true);
   };
+
+  // Add effect to monitor state changes
+  useEffect(() => {
+    console.log('State changed:', {
+      showPickupModal,
+      selectedBooking,
+      bookingNumber: selectedBooking?.booking_number
+    });
+  }, [showPickupModal, selectedBooking]);
 
   const handlePickupAssignment = async (assignmentData) => {
     try {
@@ -207,16 +222,15 @@ const BookingCourierPage = () => {
         />
       )}
 
-      {showPickupModal && selectedBooking && (
+      {showPickupModal && selectedBooking?.booking_number && (
         <PickupAssignmentModal
+          key={selectedBooking.booking_number}
           onClose={() => {
             setShowPickupModal(false);
             setSelectedBooking(null);
           }}
           onSubmit={handlePickupAssignment}
-          booking={selectedBooking}
-          branches={branches}
-          executives={executives}
+          bookingNumber={selectedBooking.booking_number}
         />
       )}
     </div>

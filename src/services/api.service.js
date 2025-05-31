@@ -75,12 +75,22 @@ const apiService = {
         });
     },
 
-    getBookingByNumber: (bookingNumber) => {
-        return axios.get(`${API_CONFIG.BASE_URL}/bookings/${bookingNumber}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+    getBookingByNumber: async (bookingNumber) => {
+        try {
+            console.log('Fetching booking with number:', bookingNumber);
+            if (!bookingNumber) {
+                throw new Error('Booking number is required');
             }
-        });
+            const response = await api.get(`/bookings/${bookingNumber}`);
+            console.log('Booking response:', response);
+            if (!response.data) {
+                throw new Error('No data received from server');
+            }
+            return response;
+        } catch (error) {
+            console.error('Error in getBookingByNumber:', error.response || error);
+            throw error;
+        }
     },
 
     getBookings: () => api.get(API_CONFIG.ENDPOINTS.BOOKINGS.LIST),
@@ -153,65 +163,30 @@ const apiService = {
     },
 
     // Branch related methods
-    getBranches: async () => {
-        try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/branches`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-            throw error;
-        }
+    getBranches: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/branches`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
     },
 
     // Executive related methods
-    getExecutives: async () => {
-        try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/executives`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching executives:', error);
-            throw error;
-        }
+    getExecutives: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/field-executives`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
     },
 
-    // Pickup assignment
-    assignPickup: async (bookingId, assignmentData) => {
-        try {
-            console.log('Making API call to assign pickup:', {
-                url: `${API_CONFIG.BASE_URL}/bookings/${bookingId}/assign-pickup`,
-                data: assignmentData
-            });
-
-            const response = await axios.post(
-                `${API_CONFIG.BASE_URL}/bookings/${bookingId}/assign-pickup`,
-                assignmentData,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            console.log('Assign pickup response:', response);
-            return response;
-        } catch (error) {
-            console.error('Error in assignPickup:', error.response || error);
-            throw error;
-        }
-    }
+    getExecutivesByBranch: (branchId) => {
+        return axios.get(`${API_CONFIG.BASE_URL}/field-executives/branch/${branchId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
 };
 
 export default apiService;
