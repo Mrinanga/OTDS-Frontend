@@ -90,6 +90,14 @@ body {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
 }
 
+.card-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+
+.card-indigo {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
 .dashboard-main {
   display: grid;
   grid-template-columns: 1fr;

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import DashboardPage from "./pages/DashboardAdmin";
 import BookingCourierPage from "./pages/BookingCourierPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
+import FinalDestinationPage from "./pages/FinalDestinationPage";
 import PickupPage from "./pages/PickupPage";
 import AgentsPage from "./pages/AgentsPage";
 import CustomersPage from "./pages/CustomersPage";

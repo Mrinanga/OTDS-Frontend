@@ -12,6 +12,7 @@ const Sidebar = () => {
         <NavLink to="/bookingcourier" className="sidebar-link"><FaTruck /> Book a Courier</NavLink>
         <NavLink to="/pickup-requests" className="sidebar-link"><FaClipboardList /> Pickup Requests</NavLink>
         <NavLink to="/shipments" className="sidebar-link"><FaBoxOpen /> Shipments</NavLink>
+        <NavLink to="/finaldestination" className="sidebar-link"><FaBoxOpen /> Final Destination</NavLink>
         <NavLink to="/agents" className="sidebar-link"><FaCalculator /> Rate Calculator</NavLink>
         <NavLink to="/zones" className="sidebar-link"><FaMapMarkedAlt /> Zones & Routes</NavLink>
         <NavLink to="/billing" className="sidebar-link"><FaFileInvoiceDollar /> Billing</NavLink>

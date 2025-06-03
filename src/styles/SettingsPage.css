@@ -1,6 +1,6 @@
 /* SettingsPage.css */
 .settings-page {
-  max-width: 1200px;
+  width: 95%;
   margin: 0 auto;
   padding: 2rem;
   font-family: 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;

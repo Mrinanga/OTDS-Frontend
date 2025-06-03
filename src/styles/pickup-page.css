@@ -1,0 +1,230 @@
+.pickup-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pickup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.pickup-header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.create-button {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.create-button:hover {
+    background: #218838;
+}
+
+.filter-controls {
+    margin-bottom: 20px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 200px;
+}
+
+.error-message {
+    background-color: #fee;
+    color: #c00;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.pickup-table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.pickup-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pickup-table th,
+.pickup-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.pickup-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #444;
+}
+
+.pickup-table tr:hover {
+    background: #f8f9fa;
+}
+
+.customer-info,
+.address-info,
+.package-info,
+.pickup-time-info,
+.assignment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.contact-info {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.landmark {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.city-pincode {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.assigned {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-badge.in-progress {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.completed {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-badge.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.not-assigned {
+    color: #666;
+    font-style: italic;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+}
+
+.action-button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-button.assign {
+    background: #007bff;
+    color: white;
+    border: none;
+}
+
+.action-button.assign:hover {
+    background: #0056b3;
+}
+
+.action-button.cancel {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+
+.action-button.cancel:hover {
+    background: #c82333;
+}
+
+.action-button.update {
+    background: #ffc107;
+    color: #000;
+    border: none;
+}
+
+.action-button.update:hover {
+    background: #e0a800;
+}
+
+.action-button.complete {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.action-button.complete:hover {
+    background: #218838;
+}
+
+@media (max-width: 1024px) {
+    .pickup-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .pickup-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .create-button {
+        width: 100%;
+    }
+
+    .actions-cell {
+        flex-direction: column;
+    }
+
+    .action-button {
+        width: 100%;
+    }
+} 

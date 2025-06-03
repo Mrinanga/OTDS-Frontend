@@ -172,21 +172,193 @@ const apiService = {
     },
 
     // Executive related methods
-    getExecutives: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/field-executives`, {
+    getExecutives: async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/field-executive`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            return data.data || []; // Return the data array or empty array if not found
+        } catch (error) {
+            console.error('Error fetching executives:', error);
+            throw error;
+        }
+    },
+
+    getExecutivesByBranch: async (branchId) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/field-executive/branch/${branchId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            return data.data || []; // Return the data array or empty array if not found
+        } catch (error) {
+            console.error('Error fetching executives by branch:', error);
+            throw error;
+        }
+    },
+
+    // Shipment methods
+    getAllShipments: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/shipments`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
     },
 
-    getExecutivesByBranch: (branchId) => {
-        return axios.get(`${API_CONFIG.BASE_URL}/field-executives/branch/${branchId}`, {
+    getFilteredShipments: (status) => {
+        return axios.get(`${API_CONFIG.BASE_URL}/shipments/filter?status=${status}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
     },
+
+    getShipmentById: (id) => {
+        return axios.get(`${API_CONFIG.BASE_URL}/shipments/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    updateShipmentStatus: (id, status) => {
+        return axios.put(`${API_CONFIG.BASE_URL}/shipments/${id}/status`, { status }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    updateShipment: (id, data) => {
+        return axios.put(`${API_CONFIG.BASE_URL}/shipments/${id}`, data, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    deleteShipment: (id) => {
+        return axios.delete(`${API_CONFIG.BASE_URL}/shipments/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    // Pickup Request Methods
+    getAllPickupRequests: async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching pickup requests:', error);
+            throw error;
+        }
+    },
+
+    getFilteredPickupRequests: async (status) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?action=filter&status=${status}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching filtered pickup requests:', error);
+            throw error;
+        }
+    },
+
+    getPickupRequestById: async (id) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?id=${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching pickup request:', error);
+            throw error;
+        }
+    },
+
+    createPickupRequest: async (data) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating pickup request:', error);
+            throw error;
+        }
+    },
+
+    assignPickup: async (data) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?action=assign`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error assigning pickup:', error);
+            throw error;
+        }
+    },
+
+    updatePickupStatus: async (id, status) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?action=status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ id, status })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating pickup status:', error);
+            throw error;
+        }
+    },
+
+    deletePickupRequest: async (id) => {
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?id=${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error deleting pickup request:', error);
+            throw error;
+        }
+    }
 };
 
 export default apiService;

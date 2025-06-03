@@ -253,51 +253,65 @@ const DashboardPage = () => {
                 <h3>Tracking Details</h3>
                 <div className="tracking-section">
                   <h4>Booking Information</h4>
-                  <p><strong>Booking Number:</strong> {trackingInfo.booking_number}</p>
-                  <p><strong>Status:</strong> <span className={`status ${trackingInfo.status.toLowerCase()}`}>{trackingInfo.status}</span></p>
-                  <p><strong>Created At:</strong> {trackingInfo.created_at}</p>
-                  <p><strong>Amount:</strong> ₹{trackingInfo.amount}</p>
-                  <p><strong>Payment Status:</strong> {trackingInfo.payment_status}</p>
+                  <p><strong>Booking Number:</strong> {trackingInfo?.booking_number || 'N/A'}</p>
+                  <p><strong>Status:</strong> <span className={`status ${trackingInfo?.status?.toLowerCase() || ''}`}>{trackingInfo?.status || 'N/A'}</span></p>
+                  <p><strong>Created At:</strong> {trackingInfo?.created_at || 'N/A'}</p>
+                  <p><strong>Amount:</strong> ₹{trackingInfo?.total_amount || '0.00'}</p>
+                  <p><strong>Payment Status:</strong> {trackingInfo?.payment_status || 'N/A'}</p>
                 </div>
 
                 <div className="tracking-section">
                   <h4>Customer Information</h4>
-                  <p><strong>Name:</strong> {trackingInfo.customer.name}</p>
-                  <p><strong>Email:</strong> {trackingInfo.customer.email}</p>
-                  <p><strong>Phone:</strong> {trackingInfo.customer.phone}</p>
+                  <p><strong>Name:</strong> {trackingInfo?.customer?.name || 'N/A'}</p>
+                  <p><strong>Email:</strong> {trackingInfo?.customer?.email || 'N/A'}</p>
+                  <p><strong>Phone:</strong> {trackingInfo?.customer?.phone || 'N/A'}</p>
                 </div>
 
                 <div className="tracking-section">
                   <h4>Pickup Address</h4>
-                  <p><strong>Name:</strong> {trackingInfo.pickup_address.name}</p>
-                  <p><strong>Phone:</strong> {trackingInfo.pickup_address.phone}</p>
-                  <p><strong>Address:</strong> {trackingInfo.pickup_address.address}</p>
-                  <p><strong>City:</strong> {trackingInfo.pickup_address.city}</p>
-                  <p><strong>State:</strong> {trackingInfo.pickup_address.state}</p>
-                  <p><strong>Country:</strong> {trackingInfo.pickup_address.country}</p>
-                  <p><strong>Postal Code:</strong> {trackingInfo.pickup_address.postal_code}</p>
+                  <p><strong>Name:</strong> {trackingInfo?.pickup_address?.name || 'N/A'}</p>
+                  <p><strong>Phone:</strong> {trackingInfo?.pickup_address?.phone || 'N/A'}</p>
+                  <p><strong>Address:</strong> {trackingInfo?.pickup_address?.address || 'N/A'}</p>
+                  <p><strong>City:</strong> {trackingInfo?.pickup_address?.city || 'N/A'}</p>
+                  <p><strong>State:</strong> {trackingInfo?.pickup_address?.state || 'N/A'}</p>
+                  <p><strong>Country:</strong> {trackingInfo?.pickup_address?.country || 'N/A'}</p>
+                  <p><strong>Postal Code:</strong> {trackingInfo?.pickup_address?.postal_code || 'N/A'}</p>
                 </div>
 
                 <div className="tracking-section">
                   <h4>Delivery Address</h4>
-                  <p><strong>Name:</strong> {trackingInfo.delivery_address.name}</p>
-                  <p><strong>Phone:</strong> {trackingInfo.delivery_address.phone}</p>
-                  <p><strong>Address:</strong> {trackingInfo.delivery_address.address}</p>
-                  <p><strong>City:</strong> {trackingInfo.delivery_address.city}</p>
-                  <p><strong>State:</strong> {trackingInfo.delivery_address.state}</p>
-                  <p><strong>Country:</strong> {trackingInfo.delivery_address.country}</p>
-                  <p><strong>Postal Code:</strong> {trackingInfo.delivery_address.postal_code}</p>
+                  <p><strong>Name:</strong> {trackingInfo?.delivery_address?.name || 'N/A'}</p>
+                  <p><strong>Phone:</strong> {trackingInfo?.delivery_address?.phone || 'N/A'}</p>
+                  <p><strong>Address:</strong> {trackingInfo?.delivery_address?.address || 'N/A'}</p>
+                  <p><strong>City:</strong> {trackingInfo?.delivery_address?.city || 'N/A'}</p>
+                  <p><strong>State:</strong> {trackingInfo?.delivery_address?.state || 'N/A'}</p>
+                  <p><strong>Country:</strong> {trackingInfo?.delivery_address?.country || 'N/A'}</p>
+                  <p><strong>Postal Code:</strong> {trackingInfo?.delivery_address?.postal_code || 'N/A'}</p>
                 </div>
 
-                {trackingInfo.tracking_updates && trackingInfo.tracking_updates.length > 0 && (
+                {trackingInfo?.package_details && (
+                  <div className="tracking-section">
+                    <h4>Package Details</h4>
+                    <p><strong>Type:</strong> {trackingInfo.package_details.type || 'N/A'}</p>
+                    <p><strong>Weight:</strong> {trackingInfo.package_details.weight || '0.00'} kg</p>
+                    <p><strong>Dimensions:</strong> {trackingInfo.package_details.dimensions || 'N/A'}</p>
+                    <p><strong>Quantity:</strong> {trackingInfo.package_details.quantity || '0'}</p>
+                    <p><strong>Description:</strong> {trackingInfo.package_details.description || 'N/A'}</p>
+                    {trackingInfo.package_details.special_instructions && (
+                      <p><strong>Special Instructions:</strong> {trackingInfo.package_details.special_instructions}</p>
+                    )}
+                  </div>
+                )}
+
+                {trackingInfo?.tracking_updates && trackingInfo.tracking_updates.length > 0 && (
                   <div className="tracking-section">
                     <h4>Tracking Updates</h4>
                     {trackingInfo.tracking_updates.map((update, index) => (
                       <div key={index} className="tracking-update">
-                        <p><strong>Status:</strong> {update.status}</p>
-                        <p><strong>Location:</strong> {update.location}</p>
-                        <p><strong>Description:</strong> {update.description}</p>
-                        <p><strong>Updated At:</strong> {update.updated_at}</p>
+                        <p><strong>Status:</strong> {update.status || 'N/A'}</p>
+                        <p><strong>Location:</strong> {update.location || 'N/A'}</p>
+                        <p><strong>Description:</strong> {update.description || 'N/A'}</p>
+                        <p><strong>Updated At:</strong> {update.updated_at || 'N/A'}</p>
                       </div>
                     ))}
                   </div>
