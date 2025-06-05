@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import apiService from '../services/api.service';
 import '../styles/pickup-assignment-modal.css';
 
-const PickupAssignmentModal = ({ isOpen, onClose, onSuccess }) => {
+const PickupAssignmentModal = ({ isOpen, onClose, onSuccess, request_id }) => {
     const [formData, setFormData] = useState({
+        request_id: request_id || '',
         customer_name: '',
         phone: '',
         email: '',
@@ -21,6 +22,15 @@ const PickupAssignmentModal = ({ isOpen, onClose, onSuccess }) => {
         payment_mode: 'cash',
         special_instructions: ''
     });
+
+    useEffect(() => {
+        if (request_id) {
+            setFormData(prev => ({
+                ...prev,
+                request_id: request_id
+            }));
+        }
+    }, [request_id]);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

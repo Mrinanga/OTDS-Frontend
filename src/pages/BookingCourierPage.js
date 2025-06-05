@@ -207,6 +207,14 @@ const BookingCourierPage = () => {
                         Request Pickup
                       </button>
                     )}
+                    {booking.status === 'FE Assigned' && (
+                      <button 
+                        className="edit-button"
+                        onClick={() => handleRequestPickup(booking)}
+                      >
+                        Edit
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

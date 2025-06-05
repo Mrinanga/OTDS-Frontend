@@ -98,10 +98,14 @@ const PickupAssignmentModal = ({ onClose, onSubmit, bookingNumber }) => {
         
         if (response.data && response.data.data) {
           setExecutives(response.data.data);
+        } else {
+          console.log('No executives data in response');
+          setExecutives([]);
         }
       } catch (err) {
         console.error('Error fetching executives:', err);
         setError('Failed to fetch field executives');
+        setExecutives([]);
       }
     };
 
@@ -117,9 +121,31 @@ const PickupAssignmentModal = ({ onClose, onSubmit, bookingNumber }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    try {
+        console.log('Submitting pickup assignment data:', {
+            bookingNumber,
+            formData
+        });
+        
+        const response = await apiService.assignPickup(bookingNumber, formData);
+        console.log('Pickup assignment response:', response);
+        
+        if (response.success) {
+            onClose();
+            onSubmit(response.data);
+        } else {
+            setError(response.message || 'Failed to assign pickup');
+        }
+    } catch (error) {
+        console.error('Error submitting pickup assignment:', error);
+        const errorMessage = error.response?.data?.message || 
+                           error.response?.data?.error || 
+                           error.message || 
+                           'Failed to assign pickup';
+        setError(errorMessage);
+    }
   };
 
   // Safely get pickup address

@@ -14,7 +14,7 @@ const DashboardPage = () => {
   const deliveryStats = [
     { day: "Mon", deliveries: 120 },
     { day: "Tue", deliveries: 98 },
-    { day: "Wed", deliveries: 110 },
+    { day: "Wed", deliveries: 110 }, 
     { day: "Thu", deliveries: 87 },
     { day: "Fri", deliveries: 140 },
     { day: "Sat", deliveries: 105 },

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/api.service';
-import PickupAssignmentModal from '../components/PickupAssignmentModal';
-import PickupAssignmentForm from '../components/PickupAssignmentForm';
+import ShipmentModal from '../components/ShipmentModal';
 import '../styles/pickup-page.css';
 
 const PickupPage = () => {
@@ -9,8 +8,8 @@ const PickupPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('all');
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedPickup, setSelectedPickup] = useState(null);
+    const [isShipmentModalOpen, setIsShipmentModalOpen] = useState(false);
 
     useEffect(() => {
         fetchPickups();
@@ -19,12 +18,15 @@ const PickupPage = () => {
     const fetchPickups = async () => {
         try {
             setLoading(true);
+            console.log('Fetching pickups with filter:', filter);
             const response = filter === 'all' 
                 ? await apiService.getAllPickupRequests()
                 : await apiService.getFilteredPickupRequests(filter);
-            setPickups(Array.isArray(response) ? response : []);
+            console.log('Pickup response:', response);
+            setPickups(Array.isArray(response.data) ? response.data : []);
             setError(null);
         } catch (err) {
+            console.error('Error in fetchPickups:', err);
             setError(err.message || 'Failed to fetch pickup requests');
         } finally {
             setLoading(false);
@@ -58,9 +60,21 @@ const PickupPage = () => {
                 ...assignmentData
             });
             fetchPickups();
-            setSelectedPickup(null);
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to assign pickup');
+        }
+    };
+
+    const handleShipmentSubmit = async (shipmentData) => {
+        try {
+            await apiService.createShipment({
+                pickup_id: selectedPickup.request_id,
+                ...shipmentData
+            });
+            setIsShipmentModalOpen(false);
+            fetchPickups();
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to create shipment');
         }
     };
 
@@ -79,12 +93,6 @@ const PickupPage = () => {
         <div className="pickup-page">
             <div className="pickup-header">
                 <h1>Pickup Requests</h1>
-                <button 
-                    className="create-button"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    Create New Pickup
-                </button>
             </div>
 
             <div className="filter-controls">
@@ -105,6 +113,16 @@ const PickupPage = () => {
 
             {loading ? (
                 <div className="loading">Loading pickup requests...</div>
+            ) : pickups.length === 0 ? (
+                <div className="empty-state">
+                    <div className="empty-state-icon">📦</div>
+                    <div className="empty-state-message">No Pickup Requests Available</div>
+                    <div className="empty-state-submessage">
+                        {filter === 'all' 
+                            ? "There are no pickup requests in the system."
+                            : `There are no ${filter} pickup requests.`}
+                    </div>
+                </div>
             ) : (
                 <div className="pickup-table-container">
                     <table className="pickup-table">
@@ -180,7 +198,7 @@ const PickupPage = () => {
                                             <>
                                                 <button
                                                     className="action-button assign"
-                                                    onClick={() => setSelectedPickup(pickup)}
+                                                    onClick={() => handleAssignPickup(pickup.request_id, {})}
                                                 >
                                                     Assign
                                                 </button>
@@ -194,19 +212,24 @@ const PickupPage = () => {
                                         )}
                                         {pickup.status === 'assigned' && (
                                             <button
-                                                className="action-button update"
-                                                onClick={() => handleStatusUpdate(pickup.request_id, 'in-progress')}
+                                                className="action-button ship"
+                                                onClick={() => {
+                                                    setSelectedPickup(pickup);
+                                                    setIsShipmentModalOpen(true);
+                                                }}
                                             >
-                                                Start Pickup
+                                                Proceed Shipment
                                             </button>
                                         )}
                                         {pickup.status === 'in-progress' && (
-                                            <button
-                                                className="action-button complete"
-                                                onClick={() => handleStatusUpdate(pickup.request_id, 'completed')}
-                                            >
-                                                Complete
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="action-button complete"
+                                                    onClick={() => handleStatusUpdate(pickup.request_id, 'completed')}
+                                                >
+                                                    Complete
+                                                </button>
+                                            </>
                                         )}
                                     </td>
                                 </tr>
@@ -216,23 +239,13 @@ const PickupPage = () => {
                 </div>
             )}
 
-            <PickupAssignmentModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSuccess={() => {
-                    setIsModalOpen(false);
-                    fetchPickups();
-                }}
-            />
-
-            {selectedPickup && (
-                <div className="modal-overlay">
-                    <PickupAssignmentForm
-                        pickup={selectedPickup}
-                        onAssign={(data) => handleAssignPickup(selectedPickup.request_id, data)}
-                        onClose={() => setSelectedPickup(null)}
-                    />
-                </div>
+            {isShipmentModalOpen && (
+                <ShipmentModal
+                    isOpen={isShipmentModalOpen}
+                    onClose={() => setIsShipmentModalOpen(false)}
+                    pickupData={selectedPickup}
+                    onSubmit={handleShipmentSubmit}
+                />
             )}
         </div>
     );

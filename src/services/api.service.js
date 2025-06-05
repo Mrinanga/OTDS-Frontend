@@ -174,13 +174,8 @@ const apiService = {
     // Executive related methods
     getExecutives: async () => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/field-executive`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            return data.data || []; // Return the data array or empty array if not found
+            const response = await api.get(API_CONFIG.ENDPOINTS.FIELD_EXECUTIVE.LIST);
+            return response;
         } catch (error) {
             console.error('Error fetching executives:', error);
             throw error;
@@ -189,13 +184,8 @@ const apiService = {
 
     getExecutivesByBranch: async (branchId) => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/field-executive/branch/${branchId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            return data.data || []; // Return the data array or empty array if not found
+            const response = await api.get(`${API_CONFIG.ENDPOINTS.FIELD_EXECUTIVE.BY_BRANCH}/${branchId}`);
+            return response;
         } catch (error) {
             console.error('Error fetching executives by branch:', error);
             throw error;
@@ -254,12 +244,8 @@ const apiService = {
     // Pickup Request Methods
     getAllPickupRequests: async () => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            return await response.json();
+            const response = await api.get(API_CONFIG.ENDPOINTS.PICKUP.LIST);
+            return response.data;
         } catch (error) {
             console.error('Error fetching pickup requests:', error);
             throw error;
@@ -268,12 +254,8 @@ const apiService = {
 
     getFilteredPickupRequests: async (status) => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?action=filter&status=${status}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            return await response.json();
+            const response = await api.get(`${API_CONFIG.ENDPOINTS.PICKUP.FILTER}?action=filter&status=${status}`);
+            return response.data;
         } catch (error) {
             console.error('Error fetching filtered pickup requests:', error);
             throw error;
@@ -282,12 +264,8 @@ const apiService = {
 
     getPickupRequestById: async (id) => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?id=${id}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            return await response.json();
+            const response = await api.get(`${API_CONFIG.ENDPOINTS.PICKUP.DETAILS}?id=${id}`);
+            return response.data;
         } catch (error) {
             console.error('Error fetching pickup request:', error);
             throw error;
@@ -296,49 +274,18 @@ const apiService = {
 
     createPickupRequest: async (data) => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(data)
-            });
-            return await response.json();
+            const response = await api.post(API_CONFIG.ENDPOINTS.PICKUP.CREATE, data);
+            return response.data;
         } catch (error) {
             console.error('Error creating pickup request:', error);
             throw error;
         }
     },
 
-    assignPickup: async (data) => {
-        try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?action=assign`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(data)
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('Error assigning pickup:', error);
-            throw error;
-        }
-    },
-
     updatePickupStatus: async (id, status) => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?action=status`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ id, status })
-            });
-            return await response.json();
+            const response = await api.put(`${API_CONFIG.ENDPOINTS.PICKUP.UPDATE}?action=status`, { id, status });
+            return response.data;
         } catch (error) {
             console.error('Error updating pickup status:', error);
             throw error;
@@ -347,15 +294,101 @@ const apiService = {
 
     deletePickupRequest: async (id) => {
         try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/pickup-request?id=${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            return await response.json();
+            const response = await api.delete(`${API_CONFIG.ENDPOINTS.PICKUP.DELETE}?id=${id}`);
+            return response.data;
         } catch (error) {
             console.error('Error deleting pickup request:', error);
+            throw error;
+        }
+    },
+
+    async assignPickup(bookingNumber, data) {
+        try {
+            // First get the booking details
+            const bookingResponse = await this.getBookingByNumber(bookingNumber);
+            const bookingData = bookingResponse.data.data;
+
+            // Get pickup address details
+            const pickupAddress = bookingData.pickup_address;
+            const deliveryAddress = bookingData.delivery_address || bookingData.pickup_address;
+
+            // Format addresses
+            const formatAddress = (address) => {
+                if (!address) return 'N/A';
+                if (typeof address === 'string') return address;
+                return [
+                    address.address,
+                    address.city,
+                    address.state,
+                    address.postal_code,
+                    address.country
+                ].filter(Boolean).join(', ');
+            };
+
+            // Ensure quantity is a valid number
+            let quantity = 1; // Default value
+            if (bookingData.package_details && bookingData.package_details.quantity) {
+                const parsedQuantity = parseInt(bookingData.package_details.quantity);
+                if (!isNaN(parsedQuantity) && parsedQuantity > 0) {
+                    quantity = parsedQuantity;
+                }
+            }
+
+            // Combine booking data with pickup assignment data
+            const requestData = {
+                request_id: bookingNumber,
+                branch_id: data.branch_id,
+                executive_id: data.executive_id,
+                pickup_date: data.pickup_date,
+                pickup_time: data.pickup_time,
+                service_type: bookingData.service_type,
+                pickup_address: formatAddress(pickupAddress),
+                delivery_address: formatAddress(deliveryAddress),
+                customer_name: pickupAddress.name || 'N/A',
+                phone: pickupAddress.phone || 'N/A',
+                email: pickupAddress.email || 'N/A',
+                address: pickupAddress.address || 'N/A',
+                landmark: pickupAddress.landmark || 'N/A',
+                city: pickupAddress.city || 'N/A',
+                pincode: pickupAddress.postal_code || 'N/A',
+                package_type: bookingData.package_details.type,
+                weight: bookingData.package_details.weight,
+                dimensions: bookingData.package_details.dimensions || 'N/A',
+                quantity: quantity,
+                contents: bookingData.package_details.description || 'N/A',
+                payment_mode: 'cash', // Default to cash
+                special_instructions: data.notes || 'N/A',
+                status: 'assigned',
+                created_by: 1, // This should be the logged-in user's ID
+                updated_by: 1  // This should be the logged-in user's ID
+            };
+
+            console.log('Sending request to:', '/pickup-request/assign');
+            console.log('Request data:', requestData);
+            const response = await api.post('/pickup-request/assign', requestData);
+            console.log('Response:', response);
+
+            // Update booking status to 'FE Assigned'
+            if (response.data.success) {
+                // Include all required fields from the original booking data
+                const updateData = {
+                    service_type: bookingData.service_type,
+                    status: 'FE Assigned',
+                    total_amount: bookingData.total_amount,
+                    payment_status: bookingData.payment_status,
+                    branch_id: data.branch_id,
+                    executive_id: data.executive_id,
+                    pickup_date: data.pickup_date,
+                    pickup_time: data.pickup_time,
+                    pickup_notes: data.notes || 'N/A'
+                };
+
+                await api.put(`${API_CONFIG.ENDPOINTS.BOOKINGS.UPDATE}/${bookingNumber}`, updateData);
+            }
+
+            return response.data;
+        } catch (error) {
+            console.error('Error assigning pickup:', error);
             throw error;
         }
     }

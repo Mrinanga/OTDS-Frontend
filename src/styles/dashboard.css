@@ -12,7 +12,7 @@ body {
 
 .dashboard-container {
   padding: 0rem 2rem 4rem 2rem;
-  min-height: 100vh;
+  overflow-y: scroll;
   background-color: #f4f6f8;
 }
 

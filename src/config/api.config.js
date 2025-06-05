@@ -39,6 +39,19 @@ const API_CONFIG = {
             BRANCH_PERFORMANCE: '/dashboard/branch-performance',
             DELIVERY_STATUS: '/dashboard/delivery-status',
             RECENT_ACTIVITIES: '/dashboard/recent-activities'
+        },
+        FIELD_EXECUTIVE: {
+            LIST: '/field-executive',
+            BY_BRANCH: '/field-executive/branch'
+        },
+        PICKUP: {
+            LIST: '/pickup-request',
+            FILTER: '/pickup-request',
+            DETAILS: '/pickup-request',
+            CREATE: '/pickup-request',
+            UPDATE: '/pickup-request',
+            DELETE: '/pickup-request',
+            ASSIGN: '/pickup-request/assign'
         }
     }
 };

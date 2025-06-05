@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/booking.css';
 
 const BookingModal = ({ onClose, onSubmit }) => {
@@ -29,8 +29,58 @@ const BookingModal = ({ onClose, onSubmit }) => {
       state: '',
       country: '',
       postal_code: ''
-    }
+    },
+    payment_method: 'pay_on_pickup',
+    calculated_amount: 0
   });
+
+  // Calculate amount based on service type, weight, and package type
+  useEffect(() => {
+    let baseAmount = 0;
+    
+    // Base amount based on service type
+    switch(formData.service_type) {
+      case 'standard':
+        baseAmount = 100;
+        break;
+      case 'express':
+        baseAmount = 200;
+        break;
+      case 'same_day':
+        baseAmount = 300;
+        break;
+      default:
+        baseAmount = 100;
+    }
+
+    // Add amount based on weight (₹10 per kg)
+    const weightAmount = formData.weight ? parseFloat(formData.weight) * 10 : 0;
+
+    // Add amount based on package type
+    let packageMultiplier = 1;
+    switch(formData.package_type) {
+      case 'document':
+        packageMultiplier = 1;
+        break;
+      case 'parcel':
+        packageMultiplier = 1.2;
+        break;
+      case 'box':
+        packageMultiplier = 1.5;
+        break;
+      case 'envelope':
+        packageMultiplier = 1.1;
+        break;
+      default:
+        packageMultiplier = 1;
+    }
+
+    const totalAmount = (baseAmount + weightAmount) * packageMultiplier;
+    setFormData(prev => ({
+      ...prev,
+      calculated_amount: Math.round(totalAmount)
+    }));
+  }, [formData.service_type, formData.weight, formData.package_type]);
 
   const handleChange = (e, section = null, subsection = null) => {
     const { name, value } = e.target;
@@ -64,7 +114,15 @@ const BookingModal = ({ onClose, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Prepare the data for submission
+    const submissionData = {
+      ...formData,
+      total_amount: formData.calculated_amount,
+      payment_status: formData.payment_method === 'pay_now' ? 'paid' : 'pending'
+    };
+    
+    onSubmit(submissionData);
   };
 
   return (
@@ -328,6 +386,42 @@ const BookingModal = ({ onClose, onSubmit }) => {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Payment Details</h3>
+            <div className="form-group">
+              <label>Calculated Amount</label>
+              <div className="calculated-amount">
+                ₹{formData.calculated_amount}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Payment Method</label>
+              <select
+                name="payment_method"
+                value={formData.payment_method}
+                onChange={handleChange}
+                required
+              >
+                <option value="pay_on_pickup">Pay on Pickup</option>
+                <option value="pay_now">Pay Now (UPI)</option>
+                <option value="cash_on_delivery">Cash on Delivery</option>
+              </select>
+            </div>
+
+            {formData.payment_method === 'pay_now' && (
+              <div className="form-group">
+                <label>UPI ID</label>
+                <input
+                  type="text"
+                  name="upi_id"
+                  placeholder="Enter your UPI ID"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <div className="form-actions">

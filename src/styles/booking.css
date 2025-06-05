@@ -119,24 +119,49 @@
 }
 
 .pickup-button {
-  background-color: #3b82f6;
+  background-color: #4CAF50;
   color: white;
-  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
 }
 
 .pickup-button:hover {
-  background-color: #2563eb;
+  background-color: #45a049;
+}
+
+.edit-button {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-button:hover {
+  background-color: #1976D2;
 }
 
 .actions-cell {
   text-align: center;
   white-space: nowrap;
+}
+
+.action-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.amount-display {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1rem;
 }
 
 /* Modal Styles */
@@ -370,7 +395,7 @@
 .cancel-button:hover {
   background-color: #c0392b;
 }
-
+ 
 .submit-button {
   padding: 8px 16px;
   background-color: #2ecc71;
