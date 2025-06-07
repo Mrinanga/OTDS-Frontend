@@ -1,5 +1,7 @@
 import React, { useContext, createContext, useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from './contexts/AuthContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 
 import DashboardPage from "./pages/DashboardAdmin";
 import BookingCourierPage from "./pages/BookingCourierPage";
@@ -17,13 +19,12 @@ import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardBranchOffice from "./pages/DashboardBranchOffice";
-
 import Sidebar from "./components/Shared/Sidebar";
 import Topbar from "./components/Shared/Topbar";
 import BranchSidebar from "./components/Shared/BranchSidebar";
 import BranchTopbar from "./components/Shared/BranchTopbar";
 
-import "./styles/app.css";
+import "./App.css";
 
 // Auth Context
 export const AuthContext = createContext();
@@ -45,6 +46,7 @@ function RoleRoute({ children, allowedRole }) {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState(null);
+  const [branchId, setBranchId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -55,6 +57,9 @@ function App() {
     if (token && user) {
       setIsAuthenticated(true);
       setRole(user.role);
+      if (user.branch && user.branch.branch_id) {
+        setBranchId(user.branch.branch_id);
+      }
     }
     setIsLoading(false);
   }, []);
@@ -64,271 +69,298 @@ function App() {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, role, setRole }}>
-      <Router>
-        <Routes>
-          {/* Public Login Route */}
-          <Route
-            path="/"
-            element={
-              isAuthenticated ? (
-                role === "branch_office" ? (
-                  <Navigate to="/dashboard-branch" replace />
-                ) : (
-                  <Navigate to="/dashboard-admin" replace />
-                )
-              ) : (
-                <LoginPage />
-              )
-            }
-          />
+    <AuthProvider>
+      <SettingsProvider>
+        <AuthContext.Provider value={{ 
+          isAuthenticated, 
+          setIsAuthenticated, 
+          role, 
+          setRole,
+          branchId,
+          setBranchId 
+        }}>
+          <Router>
+            <Routes>
+              {/* Public Login Route */}
+              <Route
+                path="/"
+                element={
+                  isAuthenticated ? (
+                    role === "branch_office" ? (
+                      <Navigate to="/dashboard-branch" replace />
+                    ) : (
+                      <Navigate to="/dashboard-admin" replace />
+                    )
+                  ) : (
+                    <LoginPage />
+                  )
+                }
+              />
 
-          {/* Protected Admin Routes */}
-          <Route
-            path="/dashboard-admin"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <DashboardAdmin />
+              {/* Protected Admin Routes */}
+              <Route
+                path="/dashboard-admin"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <DashboardAdmin />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          {/* Protected Branch Office Routes */}
-          <Route
-            path="/dashboard-branch"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <DashboardBranchOffice />
+              {/* Protected Branch Office Routes */}
+              <Route
+                path="/dashboard-branch"
+                element={
+                  <RoleRoute allowedRole="branch_office">
+                    <div className="app-container">
+                      <BranchSidebar />
+                      <div className="main-content">
+                        <BranchTopbar />
+                        <div className="page-content">
+                          <DashboardBranchOffice />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </RoleRoute>
+                }
+              />
 
-          {/* Other Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <DashboardPage />
+              {/* Other Protected Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <DashboardPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/bookingcourier"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <BookingCourierPage />
+              <Route
+                path="/bookingcourier"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <BookingCourierPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/shipments"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <ShipmentsPage />
+              <Route
+                path="/shipments"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <ShipmentsPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/pickup-requests"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <PickupPage />
+              <Route
+                path="/pickup-requests"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <PickupPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/ratecalculator"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <AgentsPage />
+                  </PrivateRoute>
+                }
+              />
+               <Route
+                path="/finaldestination"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <FinalDestinationPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/customers"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <CustomersPage />
+              <Route
+                path="/ratecalculator"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <AgentsPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/zones"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <ZonesPage />
+              <Route
+                path="/customers"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <CustomersPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/billing"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <BillingPage />
+              <Route
+                path="/zones"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <ZonesPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/support"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <SupportPage />
+              <Route
+                path="/billing"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <BillingPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/notifications"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <NotificationsPage />
+              <Route
+                path="/support"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <SupportPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/reports"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <ReportsPage />
+              <Route
+                path="/notifications"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <NotificationsPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          <Route
-            path="/settings"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <SettingsPage />
+              <Route
+                path="/reports"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <ReportsPage />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                  </PrivateRoute>
+                }
+              />
 
-          {/* Catch-all route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
-    </AuthContext.Provider>
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <div className="app-container">
+                      <Sidebar />
+                      <div className="main-content">
+                        <Topbar />
+                        <div className="page-content">
+                          <SettingsPage />
+                        </div>
+                      </div>
+                    </div>
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Catch-all route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </AuthContext.Provider>
+      </SettingsProvider>
+    </AuthProvider>
   );
 }
 

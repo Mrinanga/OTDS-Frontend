@@ -85,6 +85,7 @@ const PickupPage = () => {
             case 'in-progress': return 'status-badge in-progress';
             case 'completed': return 'status-badge completed';
             case 'cancelled': return 'status-badge cancelled';
+            case 'pickup-done': return 'status-badge pickup-done';
             default: return 'status-badge';
         }
     };
@@ -211,6 +212,17 @@ const PickupPage = () => {
                                             </>
                                         )}
                                         {pickup.status === 'assigned' && (
+                                            <button
+                                                className="action-button message"
+                                                onClick={() => {
+                                                    // TODO: Implement message FE functionality
+                                                    console.log('Message FE clicked for pickup:', pickup.request_id);
+                                                }}
+                                            >
+                                                Message FE
+                                            </button>
+                                        )}
+                                        {pickup.status === 'pickup-done' && (
                                             <button
                                                 className="action-button ship"
                                                 onClick={() => {

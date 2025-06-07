@@ -1,6 +1,7 @@
 .bookings-container {
-  padding-left: 2rem;
+  padding-left: 4rem;
   padding-right: 2rem;
+  padding-top: 2rem;
   width: 95%;
   margin: 0 auto;
 }

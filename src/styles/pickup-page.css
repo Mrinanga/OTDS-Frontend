@@ -1,6 +1,7 @@
 .pickup-page {
     padding: 2.5rem;
-    max-width: 1600px;
+    width: 96%;
+    margin-top: 5%;
     margin: 0 auto;
     background-color: #f6f8fc;
     min-height: 100vh;
@@ -96,6 +97,7 @@
 }
 
 .pickup-table-container {
+    width: 98%;
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
@@ -200,6 +202,11 @@
     color: #991b1b;
 }
 
+.status-badge.pickup-done {
+    background-color: #ffea00;
+    color: #854d0e;
+}
+
 .not-assigned {
     color: #64748b;
     font-style: italic;
@@ -210,6 +217,11 @@
     white-space: nowrap;
     display: flex;
     gap: 0.75rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    min-height: 80px;
 }
 
 .action-button {
@@ -282,7 +294,20 @@
 }
 
 .action-button.ship:hover {
-    background-color: #218838;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+
+.action-button.message {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.action-button.message:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
 }
 
 .modal-overlay {

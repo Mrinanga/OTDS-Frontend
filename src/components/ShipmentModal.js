@@ -1,20 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/shipment-modal.css';
+import apiService from '../services/api.service';
 
 const ShipmentModal = ({ isOpen, onClose, pickupData, onSubmit }) => {
+    const [branches, setBranches] = useState([]);
     const [shipmentData, setShipmentData] = useState({
         tracking_number: pickupData.request_id.toString(),
         shipping_method: 'standard',
         estimated_delivery: '',
         shipping_notes: '',
+        final_destination_branch: '',
         sub_branches: [{ branch_id: '', arrival_time: '', departure_time: '' }]
     });
 
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const response = await apiService.getBranches();
+                if (response.data && response.data.data) {
+                    setBranches(response.data.data);
+                }
+            } catch (err) {
+                console.error('Error fetching branches:', err);
+            }
+        };
+
+        fetchBranches();
+    }, []);
+
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit(shipmentData);
+        try {
+            const response = await apiService.createShipment(shipmentData);
+            if (response.success) {
+                onSubmit(response.data);
+                onClose();
+            } else {
+                // Handle error
+                console.error('Failed to create shipment:', response.message);
+            }
+        } catch (error) {
+            console.error('Error creating shipment:', error);
+            // Handle error appropriately
+        }
     };
 
     const handleChange = (e) => {
@@ -132,6 +162,22 @@ const ShipmentModal = ({ isOpen, onClose, pickupData, onSubmit }) => {
                                     required
                                 />
                             </div>
+                            <div className="form-group">
+                                <label>Final Destination Branch</label>
+                                <select
+                                    name="final_destination_branch"
+                                    value={shipmentData.final_destination_branch}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select Final Destination Branch</option>
+                                    {branches.map((branch) => (
+                                        <option key={branch.branch_id} value={branch.branch_id}>
+                                            {branch.branch_name} - {branch.city}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="form-section">
@@ -159,11 +205,11 @@ const ShipmentModal = ({ isOpen, onClose, pickupData, onSubmit }) => {
                                                 required
                                             >
                                                 <option value="">Select Branch</option>
-                                                <option value="1">Main Branch</option>
-                                                <option value="2">North Branch</option>
-                                                <option value="3">South Branch</option>
-                                                <option value="4">East Branch</option>
-                                                <option value="5">West Branch</option>
+                                                {branches.map((branch) => (
+                                                    <option key={branch.branch_id} value={branch.branch_id}>
+                                                        {branch.branch_name} - {branch.city}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="form-group">

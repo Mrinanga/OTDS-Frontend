@@ -11,8 +11,7 @@ body {
 }
 
 .dashboard-container {
-  padding: 0rem 2rem 4rem 2rem;
-  overflow-y: scroll;
+  padding: 2rem 2rem 4rem 3rem;
   background-color: #f4f6f8;
 }
 

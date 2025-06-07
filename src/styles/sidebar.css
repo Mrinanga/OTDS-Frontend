@@ -1,15 +1,16 @@
 .sidebar {
   width: 15%;
-  margin-top: 4%;
+  margin-top: 2%; /* Adjusted to account for topbar height */
   background: linear-gradient(180deg, #0a1d37 0%, #122b4f 100%);
   color: #ffffff;
   display: flex;
   flex-direction: column;
   padding: 30px 20px;
-  height: 100vh;
+  height: 98vh; /* Adjusted to account for topbar */
   position: fixed;
   left: 0;
   top: 0;
+  z-index: 1000;
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: all 0.3s ease;
@@ -19,6 +20,7 @@
   text-align: center;
   font-size: 22px;
   font-weight: 700;
+  margin-top: 20px;
   letter-spacing: 1px;
   color: #ffffff;
   text-transform: uppercase;

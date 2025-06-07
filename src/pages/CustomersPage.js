@@ -2,27 +2,6 @@ import React, { useState, useEffect } from "react";
 import "../styles/CustomersPage.css";
 import apiService from '../services/api.service';
 
-const initialCustomers = [
-  {
-    id: 1,
-    name: "Ramesh Das",
-    phone: "9876543210",
-    email: "ramesh@example.com",
-    address: "Guwahati, Assam",
-    status: "Active",
-    orders: 3,
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    phone: "7896541230",
-    email: "priya@example.com",
-    address: "Shillong, Meghalaya",
-    status: "Inactive",
-    orders: 5,
-  },
-];
-
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,10 +9,15 @@ export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
-    address: ''
+    company_name: '',
+    business_type: '',
+    tax_id: '',
+    credit_limit: '',
+    payment_terms: ''
   });
 
   useEffect(() => {
@@ -43,10 +27,28 @@ export default function CustomersPage() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getProfile();
-      setCustomers(response.data);
+      const response = await apiService.getCustomers();
+      if (response.data && Array.isArray(response.data)) {
+        // Transform the data to match our display format
+        const transformedCustomers = response.data.map(customer => ({
+          id: customer.customer_id,
+          name: `${customer.first_name} ${customer.last_name}`,
+          company: customer.company_name,
+          email: customer.email,
+          phone: customer.phone,
+          business_type: customer.business_type,
+          tax_id: customer.tax_id,
+          credit_limit: customer.credit_limit,
+          payment_terms: customer.payment_terms,
+          status: customer.status || 'Active'
+        }));
+        setCustomers(transformedCustomers);
+      } else {
+        setError('Invalid response format from server');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch customers');
+      console.error('Error fetching customers:', err);
     } finally {
       setLoading(false);
     }
@@ -55,10 +57,15 @@ export default function CustomersPage() {
   const handleEdit = (customer) => {
     setSelectedCustomer(customer);
     setFormData({
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address
+      first_name: customer.name.split(' ')[0] || '',
+      last_name: customer.name.split(' ').slice(1).join(' ') || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      company_name: customer.company || '',
+      business_type: customer.business_type || '',
+      tax_id: customer.tax_id || '',
+      credit_limit: customer.credit_limit || '',
+      payment_terms: customer.payment_terms || ''
     });
   };
 
@@ -66,20 +73,26 @@ export default function CustomersPage() {
     e.preventDefault();
     try {
       if (selectedCustomer) {
-        await apiService.updateProfile(formData);
+        await apiService.updateProfile(selectedCustomer.id, formData);
       } else {
-        await apiService.register(formData);
+        await apiService.createCustomer(formData);
       }
       fetchCustomers();
       setSelectedCustomer(null);
       setFormData({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         phone: '',
-        address: ''
+        company_name: '',
+        business_type: '',
+        tax_id: '',
+        credit_limit: '',
+        payment_terms: ''
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save customer data');
+      console.error('Error saving customer:', err);
     }
   };
 
@@ -98,40 +111,24 @@ export default function CustomersPage() {
 
   const filteredCustomers = customers
     .filter((cust) =>
-      cust.name.toLowerCase().includes(search.toLowerCase())
+      cust.name.toLowerCase().includes(search.toLowerCase()) ||
+      cust.company.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const handleAddCustomer = () => {
-    setSelectedCustomer(null);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      address: ''
-    });
-  };
-
-  const toggleStatus = (id) => {
-    setCustomers(
-      customers.map((c) =>
-        c.id === id
-          ? { ...c, status: c.status === "Active" ? "Inactive" : "Active" }
-          : c
-      )
-    );
-  };
-
   const handleExportCSV = () => {
     const csvContent = [
-      ["Name", "Phone", "Email", "Address", "Status", "Orders"],
+      ["Name", "Company", "Phone", "Email", "Business Type", "Tax ID", "Credit Limit", "Payment Terms", "Status"],
       ...customers.map((c) => [
         c.name,
+        c.company,
         c.phone,
         c.email,
-        c.address,
+        c.business_type,
+        c.tax_id,
+        c.credit_limit,
+        c.payment_terms,
         c.status,
-        c.orders,
       ]),
     ]
       .map((e) => e.join(","))
@@ -154,7 +151,7 @@ export default function CustomersPage() {
           <button className="export-btn" onClick={handleExportCSV}>
             Export CSV
           </button>
-          <button className="add-btn" onClick={handleAddCustomer}>
+          <button className="add-btn" onClick={() => setSelectedCustomer(null)}>
             + Add Customer
           </button>
         </div>
@@ -162,11 +159,14 @@ export default function CustomersPage() {
 
       <input
         type="text"
-        placeholder="Search by name..."
+        placeholder="Search by name or company..."
         value={search}
         onChange={handleSearch}
         className="search-input"
       />
+
+      {loading && <div className="loading">Loading customers...</div>}
+      {error && <div className="error">{error}</div>}
 
       <div className="table-wrapper">
         <table className="customers-table">
@@ -174,52 +174,50 @@ export default function CustomersPage() {
             <tr>
               <th>#</th>
               <th>Name</th>
+              <th>Company</th>
               <th>Phone</th>
               <th>Email</th>
-              <th>Address</th>
-              <th>Orders</th>
+              <th>Business Type</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map((cust, index) => (
-              <tr key={cust.id}>
-                <td>{index + 1}</td>
-                <td>{cust.name}</td>
-                <td>{cust.phone}</td>
-                <td>{cust.email}</td>
-                <td>{cust.address}</td>
-                <td>{cust.orders}</td>
-                <td>
-                  <span
-                    className={`status-badge ${cust.status.toLowerCase()}`}
-                    onClick={() => toggleStatus(cust.id)}
-                  >
-                    {cust.status}
-                  </span>
-                </td>
-                <td>
-                  <button className="action-btn view">View</button>
-                  <button
-                    className="action-btn edit"
-                    onClick={() => handleEdit(cust)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="action-btn delete"
-                    onClick={() => handleDelete(cust.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filteredCustomers.length === 0 && (
+            {filteredCustomers.length > 0 ? (
+              filteredCustomers.map((cust, index) => (
+                <tr key={cust.id}>
+                  <td>{index + 1}</td>
+                  <td>{cust.name}</td>
+                  <td>{cust.company}</td>
+                  <td>{cust.phone}</td>
+                  <td>{cust.email}</td>
+                  <td>{cust.business_type}</td>
+                  <td>
+                    <span className={`status-badge ${cust.status.toLowerCase()}`}>
+                      {cust.status}
+                    </span>
+                  </td>
+                  <td>
+                    <button className="action-btn view">View</button>
+                    <button
+                      className="action-btn edit"
+                      onClick={() => handleEdit(cust)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="action-btn delete"
+                      onClick={() => handleDelete(cust.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan="8" className="no-data">
-                  No customers found.
+                  {error ? 'Error loading customers' : 'No customers found'}
                 </td>
               </tr>
             )}
@@ -227,18 +225,48 @@ export default function CustomersPage() {
         </table>
       </div>
 
-      {(selectedCustomer || selectedCustomer === null) && (
+      {selectedCustomer !== undefined && (
         <div className="modal-backdrop">
           <form className="modal" onSubmit={handleSubmit}>
             <h3>{selectedCustomer ? "Edit Customer" : "Add Customer"}</h3>
+            <div className="form-row">
+              <input
+                name="first_name"
+                value={formData.first_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, first_name: e.target.value })
+                }
+                required
+                placeholder="First Name"
+              />
+              <input
+                name="last_name"
+                value={formData.last_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, last_name: e.target.value })
+                }
+                required
+                placeholder="Last Name"
+              />
+            </div>
             <input
-              name="name"
-              value={formData.name}
+              name="company_name"
+              value={formData.company_name}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, company_name: e.target.value })
               }
               required
-              placeholder="Full Name"
+              placeholder="Company Name"
+            />
+            <input
+              name="email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              required
+              type="email"
+              placeholder="Email"
             />
             <input
               name="phone"
@@ -250,36 +278,41 @@ export default function CustomersPage() {
               placeholder="Phone"
             />
             <input
-              name="email"
-              value={formData.email}
+              name="business_type"
+              value={formData.business_type}
               onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+                setFormData({ ...formData, business_type: e.target.value })
               }
-              required
-              placeholder="Email"
+              placeholder="Business Type"
             />
             <input
-              name="address"
-              value={formData.address}
+              name="tax_id"
+              value={formData.tax_id}
               onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
+                setFormData({ ...formData, tax_id: e.target.value })
               }
-              required
-              placeholder="Address"
+              placeholder="Tax ID"
             />
-            <select
-              name="status"
-              value={formData.status || "Active"}
+            <input
+              name="credit_limit"
+              value={formData.credit_limit}
               onChange={(e) =>
-                setFormData({ ...formData, status: e.target.value })
+                setFormData({ ...formData, credit_limit: e.target.value })
               }
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+              type="number"
+              placeholder="Credit Limit"
+            />
+            <input
+              name="payment_terms"
+              value={formData.payment_terms}
+              onChange={(e) =>
+                setFormData({ ...formData, payment_terms: e.target.value })
+              }
+              placeholder="Payment Terms"
+            />
             <div className="modal-actions">
               <button type="submit">Save</button>
-              <button type="button" onClick={() => setSelectedCustomer(null)}>
+              <button type="button" onClick={() => setSelectedCustomer(undefined)}>
                 Cancel
               </button>
             </div>

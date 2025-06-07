@@ -100,6 +100,7 @@ const apiService = {
 
     // Customer methods
     getProfile: () => api.get(API_CONFIG.ENDPOINTS.CUSTOMERS.PROFILE),
+    getCustomers: () => api.get(API_CONFIG.ENDPOINTS.CUSTOMERS.PROFILE),
     updateProfile: (id, profileData) => api.put(`${API_CONFIG.ENDPOINTS.CUSTOMERS.UPDATE}/${id}`, profileData),
     getAddresses: () => api.get(API_CONFIG.ENDPOINTS.CUSTOMERS.ADDRESSES),
     createCustomer: (customerData) => api.post(API_CONFIG.ENDPOINTS.CUSTOMERS.CREATE, customerData),
@@ -193,6 +194,16 @@ const apiService = {
     },
 
     // Shipment methods
+    createShipment: async (shipmentData) => {
+        try {
+            const response = await api.post(`${API_CONFIG.BASE_URL}/shipments`, shipmentData);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating shipment:', error);
+            throw error;
+        }
+    },
+
     getAllShipments: () => {
         return axios.get(`${API_CONFIG.BASE_URL}/shipments`, {
             headers: {

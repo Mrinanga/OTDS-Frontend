@@ -33,6 +33,12 @@ export default function LoginPage() {
         return;
       }
 
+      // Check if user has branch association
+      if (user.role !== 'admin' && (!user.branch || !user.branch.branch_id)) {
+        setError('No branch is associated with this user. Please contact your administrator.');
+        return;
+      }
+
       // Store auth data in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));

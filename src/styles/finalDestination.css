@@ -1,0 +1,196 @@
+.destinations-container {
+  padding-left: 2rem;
+  padding-top: 2rem;
+  width: 96%;
+  margin: 0 auto;
+}
+
+.destinations-header {
+  margin-bottom: 30px;
+}
+
+.destinations-header h1 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.destinations-header p {
+  color: #666;
+  font-size: 16px;
+}
+
+.destinations-controls {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.destinations-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.destinations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.destinations-table th,
+.destinations-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.destinations-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.destinations-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.destination-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.destination-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+}
+
+.status-badge.inactive {
+  background-color: #f8d7da;
+  color: #dc3545;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.shipment-details-container {
+  margin-top: 30px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.shipment-details-container h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.shipment-details {
+  margin-bottom: 20px;
+}
+
+.shipments-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.shipments-table th,
+.shipments-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.shipments-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.shipments-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.package-details {
+  font-size: 13px;
+}
+
+.package-details p {
+  margin: 2px 0;
+}
+
+.close-shipment-details-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.close-shipment-details-btn:hover {
+  background-color: #5a6268;
+}
+
+.status-badge.in-transit {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-badge.delivered {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-destinations {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+} 
