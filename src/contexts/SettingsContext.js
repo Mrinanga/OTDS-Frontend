@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import settingsService from '../services/settings.service';
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext, useState } from 'react';
+import config from '../config';
 
 const SettingsContext = createContext();
 
@@ -13,62 +12,23 @@ export const useSettings = () => {
 };
 
 export const SettingsProvider = ({ children }) => {
-  const { user } = useAuth();
-  const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState(config.DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (user) {
-      loadSettings();
-    }
-  }, [user]);
-
-  const loadSettings = async () => {
+  const updateSettings = (type, data) => {
     try {
-      setLoading(true);
-      const response = await settingsService.getSettings();
-      setSettings(response.data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateSettings = async (type, data) => {
-    try {
-      setLoading(true);
-      let response;
-
-      switch (type) {
-        case 'preferences':
-          response = await settingsService.updatePreferences(data);
-          break;
-        case 'notifications':
-          response = await settingsService.updateNotifications(data);
-          break;
-        case 'security':
-          response = await settingsService.updateSecurity(data);
-          break;
-        default:
-          throw new Error('Invalid settings type');
-      }
-
-      // Update the settings state with the new data
       setSettings(prevSettings => ({
         ...prevSettings,
-        [type]: response.data
+        [type]: {
+          ...prevSettings[type],
+          ...data
+        }
       }));
-
-      setError(null);
-      return response;
+      return { success: true };
     } catch (err) {
       setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -76,8 +36,7 @@ export const SettingsProvider = ({ children }) => {
     settings,
     loading,
     error,
-    updateSettings,
-    refreshSettings: loadSettings
+    updateSettings
   };
 
   return (

@@ -43,20 +43,22 @@ const SettingsTabs = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <div className="settings-tabs">
-      {tabs.map(tab => (
-        <div
-          key={tab.id}
-          className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
-          onClick={() => onTabChange(tab.id)}
-        >
-          <div className="tab-icon">{tab.icon}</div>
-          <div className="tab-content">
-            <h3>{tab.label}</h3>
-            <p>{tab.description}</p>
+    <div className="settings-content">
+      <div className="settings-tabs">
+        {tabs.map(tab => (
+          <div
+            key={tab.id}
+            className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => onTabChange(tab.id)}
+          >
+            <div className="tab-icon">{tab.icon}</div>
+            <div className="tab-content">
+              <h3>{tab.label}</h3>
+              <p>{tab.description}</p>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

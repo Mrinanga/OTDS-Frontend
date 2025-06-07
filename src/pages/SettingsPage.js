@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import SettingsTabs from '../components/Settings/SettingsTabs';
 import ProfileSettings from '../components/Settings/ProfileSettings';
@@ -11,14 +10,13 @@ import SystemSettings from '../components/Settings/SystemSettings';
 import '../styles/SettingsPage.css';
 
 const SettingsPage = () => {
-  const { user } = useAuth();
-  const { settings, updateSettings, loading, error } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
     // Profile Settings
-    name: user?.first_name + ' ' + user?.last_name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+91 9876543210',
     avatar: null,
 
     // Branch Office Settings
@@ -127,7 +125,7 @@ const SettingsPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     try {
       // Group settings by tab
@@ -194,10 +192,12 @@ const SettingsPage = () => {
         }
       };
 
-      // Update only the settings for the active tab
-      await updateSettings(activeTab, tabSettings[activeTab]);
+      // Update settings for the active tab
+      updateSettings(activeTab, tabSettings[activeTab]);
+      alert('Settings updated successfully!');
     } catch (error) {
       console.error('Error updating settings:', error);
+      alert('Failed to update settings. Please try again.');
     }
   };
 
@@ -261,47 +261,22 @@ const SettingsPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="settings-page">
-        <div className="settings-header">
-          <h1>Settings</h1>
-          <p>Loading your settings...</p>
-        </div>
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="settings-page">
-        <div className="settings-header">
-          <h1>Settings</h1>
-          <p>Error loading settings</p>
-        </div>
-        <div className="error-message">
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="btn btn-primary">
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="settings-page">
+    <div className="settings-container">
       <div className="settings-header">
-        <h1>Settings</h1>
-        <p>Manage your account settings and preferences</p>
+        <h1 className="settings-title">Settings</h1>
+        <p className="settings-subtitle">Manage your account settings and preferences</p>
       </div>
-      <div className="settings-content">
-        <SettingsTabs activeTab={activeTab} onTabChange={handleTabChange} />
-        <div className="settings-form-container">
-          {renderActiveTab()}
+      
+      <div className="settings-wrapper">
+        <div className="settings-sidebar">
+          <SettingsTabs activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
+        
+        <div className="settings-main">
+          <div className="settings-content">
+            {renderActiveTab()}
+          </div>
         </div>
       </div>
     </div>
