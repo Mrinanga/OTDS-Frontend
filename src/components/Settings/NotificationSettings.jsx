@@ -1,335 +1,311 @@
 // src/components/forms/NotificationsForm.js
-import React from "react";
+import React, { useState, useEffect } from "react";
+import {
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Divider,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  Select,
+  MenuItem,
+  InputLabel,
+  Box,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import * as settingsService from '../../services/settingsService';
 
-export default function NotificationsForm({ formData, handleChange }) {
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+}));
+
+const NotificationSettings = () => {
+  const [formData, setFormData] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    pushNotifications: true,
+    notificationFrequency: 'immediate',
+    quietHours: {
+      enabled: false,
+      start: '22:00',
+      end: '07:00'
+    },
+    notificationTypes: {
+      bookingUpdates: true,
+      paymentReminders: true,
+      systemAlerts: true,
+      marketingUpdates: false
+    }
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    loadNotificationSettings();
+  }, []);
+
+  const loadNotificationSettings = async () => {
+    try {
+      setLoading(true);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('User data not found');
+      }
+      const response = await settingsService.getNotificationSettings(user.id);
+      setFormData(response.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleNotificationTypeChange = (type) => (e) => {
+    const { checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      notificationTypes: {
+        ...prev.notificationTypes,
+        [type]: checked
+      }
+    }));
+  };
+
+  const handleQuietHoursChange = (field) => (e) => {
+    const { value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      quietHours: {
+        ...prev.quietHours,
+        [field]: type === 'checkbox' ? checked : value
+      }
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError(null);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('User data not found');
+      }
+      await settingsService.updateNotificationSettings(user.id, formData);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" my={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <section className="notification-settings">
-      <h3>Notification Settings</h3>
+    <form onSubmit={handleSubmit}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Settings updated successfully!
+        </Alert>
+      )}
 
-      <div className="form-section">
-        <h4>Delivery Notifications</h4>
-        <div className="notification-group">
-          <div className="notification-option">
-            <div className="notification-header">
-              <label>
-                <input
-                  type="checkbox"
-                  name="notifyDeliveryStatus"
-                  checked={formData.notifyDeliveryStatus}
-                  onChange={handleChange}
-                />
-                Delivery Status Updates
-              </label>
-              <div className="notification-channels">
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="deliveryStatusEmail"
-                    checked={formData.deliveryStatusEmail}
-                    onChange={handleChange}
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Notification Channels
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="emailNotifications"
+                    checked={formData.emailNotifications}
+                    onChange={handleInputChange}
                   />
-                  Email
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="deliveryStatusSMS"
-                    checked={formData.deliveryStatusSMS}
-                    onChange={handleChange}
+                }
+                label="Email Notifications"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="smsNotifications"
+                    checked={formData.smsNotifications}
+                    onChange={handleInputChange}
                   />
-                  SMS
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="deliveryStatusPush"
-                    checked={formData.deliveryStatusPush}
-                    onChange={handleChange}
+                }
+                label="SMS Notifications"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="pushNotifications"
+                    checked={formData.pushNotifications}
+                    onChange={handleInputChange}
                   />
-                  Push
-                </label>
-              </div>
-            </div>
-            <p className="help-text">Get notified about delivery status changes (Picked up, In Transit, Delivered, etc.)</p>
-          </div>
+                }
+                label="Push Notifications"
+              />
+            </FormGroup>
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-          <div className="notification-option">
-            <div className="notification-header">
-              <label>
-                <input
-                  type="checkbox"
-                  name="notifyDeliveryAttempts"
-                  checked={formData.notifyDeliveryAttempts}
-                  onChange={handleChange}
-                />
-                Delivery Attempt Updates
-              </label>
-              <div className="notification-channels">
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="deliveryAttemptsEmail"
-                    checked={formData.deliveryAttemptsEmail}
-                    onChange={handleChange}
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Notification Preferences
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Notification Frequency</InputLabel>
+              <Select
+                name="notificationFrequency"
+                value={formData.notificationFrequency}
+                onChange={handleInputChange}
+                label="Notification Frequency"
+              >
+                <MenuItem value="immediate">Immediate</MenuItem>
+                <MenuItem value="daily">Daily Digest</MenuItem>
+                <MenuItem value="weekly">Weekly Summary</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="quietHours.enabled"
+                    checked={formData.quietHours.enabled}
+                    onChange={handleQuietHoursChange('enabled')}
                   />
-                  Email
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="deliveryAttemptsSMS"
-                    checked={formData.deliveryAttemptsSMS}
-                    onChange={handleChange}
+                }
+                label="Enable Quiet Hours"
+              />
+            </FormGroup>
+            {formData.quietHours.enabled && (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="time"
+                    label="Start Time"
+                    name="quietHours.start"
+                    value={formData.quietHours.start}
+                    onChange={handleQuietHoursChange('start')}
+                    InputLabelProps={{ shrink: true }}
                   />
-                  SMS
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="deliveryAttemptsPush"
-                    checked={formData.deliveryAttemptsPush}
-                    onChange={handleChange}
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="time"
+                    label="End Time"
+                    name="quietHours.end"
+                    value={formData.quietHours.end}
+                    onChange={handleQuietHoursChange('end')}
+                    InputLabelProps={{ shrink: true }}
                   />
-                  Push
-                </label>
-              </div>
-            </div>
-            <p className="help-text">Receive notifications about delivery attempts and any issues encountered</p>
-          </div>
-        </div>
-      </div>
+                </Grid>
+              </Grid>
+            )}
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-      <div className="form-section">
-        <h4>Pickup Notifications</h4>
-        <div className="notification-group">
-          <div className="notification-option">
-            <div className="notification-header">
-              <label>
-                <input
-                  type="checkbox"
-                  name="notifyPickupRequests"
-                  checked={formData.notifyPickupRequests}
-                  onChange={handleChange}
-                />
-                New Pickup Requests
-              </label>
-              <div className="notification-channels">
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="pickupRequestsEmail"
-                    checked={formData.pickupRequestsEmail}
-                    onChange={handleChange}
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Notification Types
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.notificationTypes.bookingUpdates}
+                    onChange={handleNotificationTypeChange('bookingUpdates')}
                   />
-                  Email
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="pickupRequestsSMS"
-                    checked={formData.pickupRequestsSMS}
-                    onChange={handleChange}
+                }
+                label="Booking Updates"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.notificationTypes.paymentReminders}
+                    onChange={handleNotificationTypeChange('paymentReminders')}
                   />
-                  SMS
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="pickupRequestsPush"
-                    checked={formData.pickupRequestsPush}
-                    onChange={handleChange}
+                }
+                label="Payment Reminders"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.notificationTypes.systemAlerts}
+                    onChange={handleNotificationTypeChange('systemAlerts')}
                   />
-                  Push
-                </label>
-              </div>
-            </div>
-            <p className="help-text">Get notified when new pickup requests are assigned to you</p>
-          </div>
+                }
+                label="System Alerts"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.notificationTypes.marketingUpdates}
+                    onChange={handleNotificationTypeChange('marketingUpdates')}
+                  />
+                }
+                label="Marketing Updates"
+              />
+            </FormGroup>
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-          <div className="notification-option">
-            <div className="notification-header">
-              <label>
-                <input
-                  type="checkbox"
-                  name="notifyPickupReminders"
-                  checked={formData.notifyPickupReminders}
-                  onChange={handleChange}
-                />
-                Pickup Reminders
-              </label>
-              <div className="notification-channels">
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="pickupRemindersEmail"
-                    checked={formData.pickupRemindersEmail}
-                    onChange={handleChange}
-                  />
-                  Email
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="pickupRemindersSMS"
-                    checked={formData.pickupRemindersSMS}
-                    onChange={handleChange}
-                  />
-                  SMS
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="pickupRemindersPush"
-                    checked={formData.pickupRemindersPush}
-                    onChange={handleChange}
-                  />
-                  Push
-                </label>
-              </div>
-            </div>
-            <p className="help-text">Receive reminders about upcoming pickups</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section">
-        <h4>System Notifications</h4>
-        <div className="notification-group">
-          <div className="notification-option">
-            <div className="notification-header">
-              <label>
-                <input
-                  type="checkbox"
-                  name="notifySystemAlerts"
-                  checked={formData.notifySystemAlerts}
-                  onChange={handleChange}
-                />
-                System Alerts
-              </label>
-              <div className="notification-channels">
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="systemAlertsEmail"
-                    checked={formData.systemAlertsEmail}
-                    onChange={handleChange}
-                  />
-                  Email
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="systemAlertsSMS"
-                    checked={formData.systemAlertsSMS}
-                    onChange={handleChange}
-                  />
-                  SMS
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="systemAlertsPush"
-                    checked={formData.systemAlertsPush}
-                    onChange={handleChange}
-                  />
-                  Push
-                </label>
-              </div>
-            </div>
-            <p className="help-text">Receive important system alerts and updates</p>
-          </div>
-
-          <div className="notification-option">
-            <div className="notification-header">
-              <label>
-                <input
-                  type="checkbox"
-                  name="notifyPerformanceReports"
-                  checked={formData.notifyPerformanceReports}
-                  onChange={handleChange}
-                />
-                Performance Reports
-              </label>
-              <div className="notification-channels">
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="performanceReportsEmail"
-                    checked={formData.performanceReportsEmail}
-                    onChange={handleChange}
-                  />
-                  Email
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="performanceReportsSMS"
-                    checked={formData.performanceReportsSMS}
-                    onChange={handleChange}
-                  />
-                  SMS
-                </label>
-                <label className="channel-option">
-                  <input
-                    type="checkbox"
-                    name="performanceReportsPush"
-                    checked={formData.performanceReportsPush}
-                    onChange={handleChange}
-                  />
-                  Push
-                </label>
-              </div>
-            </div>
-            <p className="help-text">Get daily/weekly performance reports and analytics</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section">
-        <h4>Notification Schedule</h4>
-        <div className="form-group">
-          <label>Quiet Hours:</label>
-          <div className="time-range">
-            <select
-              name="quietHoursStart"
-              value={formData.quietHoursStart}
-              onChange={handleChange}
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <option key={i} value={`${i}:00`}>
-                  {`${i.toString().padStart(2, '0')}:00`}
-                </option>
-              ))}
-            </select>
-            <span>to</span>
-            <select
-              name="quietHoursEnd"
-              value={formData.quietHoursEnd}
-              onChange={handleChange}
-            >
-              {Array.from({ length: 24 }, (_, i) => (
-                <option key={i} value={`${i}:00`}>
-                  {`${i.toString().padStart(2, '0')}:00`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <p className="help-text">During these hours, you'll only receive critical notifications</p>
-        </div>
-
-        <div className="form-group">
-          <label>Report Frequency:</label>
-          <select
-            name="reportFrequency"
-            value={formData.reportFrequency}
-            onChange={handleChange}
-          >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-        </div>
-      </div>
-    </section>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        size="large"
+        sx={{ mt: 2 }}
+        disabled={loading}
+      >
+        {loading ? 'Saving...' : 'Save Changes'}
+      </Button>
+    </form>
   );
-}
+};
+
+export default NotificationSettings;

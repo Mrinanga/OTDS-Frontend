@@ -1,5 +1,36 @@
 import React, { useState, useEffect } from "react";
 import apiService from "../../services/api.service";
+import {
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControlLabel,
+  Switch,
+  Box,
+  Divider,
+  Alert,
+  Snackbar
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+}));
 
 export default function BranchOfficeSettings() {
   const [branches, setBranches] = useState([]);
@@ -10,14 +41,17 @@ export default function BranchOfficeSettings() {
     address: "",
     city: "",
     state: "",
-    pincode: "",
+    country: "India",
+    postal_code: "",
     phone: "",
     email: "",
-    manager_name: "",
-    manager_phone: "",
-    manager_email: "",
+    manager_id: null,
     status: "active"
   });
+  const [openDialog, setOpenDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     fetchBranches();
@@ -25,12 +59,15 @@ export default function BranchOfficeSettings() {
 
   const fetchBranches = async () => {
     try {
+      setLoading(true);
       const response = await apiService.getBranches();
       if (response.data && response.data.data) {
         setBranches(response.data.data);
       }
     } catch (err) {
-      console.error('Error fetching branches:', err);
+      setError('Error fetching branches: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,15 +82,27 @@ export default function BranchOfficeSettings() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
+      setError(null);
+      
+      if (!formData.branch_name || !formData.address || !formData.city || 
+          !formData.state || !formData.postal_code || !formData.phone) {
+        throw new Error('Please fill in all required fields');
+      }
+
       if (isEditing) {
         await apiService.updateBranch(selectedBranch.branch_id, formData);
       } else {
         await apiService.createBranch(formData);
       }
+      
+      setSuccess(true);
       fetchBranches();
-      resetForm();
+      handleCloseDialog();
     } catch (err) {
-      console.error('Error saving branch:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,24 +113,28 @@ export default function BranchOfficeSettings() {
       address: branch.address,
       city: branch.city,
       state: branch.state,
-      pincode: branch.pincode,
+      country: branch.country || "India",
+      postal_code: branch.postal_code,
       phone: branch.phone,
       email: branch.email,
-      manager_name: branch.manager_name,
-      manager_phone: branch.manager_phone,
-      manager_email: branch.manager_email,
+      manager_id: branch.manager_id,
       status: branch.status
     });
     setIsEditing(true);
+    setOpenDialog(true);
   };
 
   const handleDelete = async (branchId) => {
     if (window.confirm('Are you sure you want to delete this branch?')) {
       try {
+        setLoading(true);
         await apiService.deleteBranch(branchId);
+        setSuccess(true);
         fetchBranches();
       } catch (err) {
-        console.error('Error deleting branch:', err);
+        setError('Error deleting branch: ' + err.message);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -92,181 +145,227 @@ export default function BranchOfficeSettings() {
       address: "",
       city: "",
       state: "",
-      pincode: "",
+      country: "India",
+      postal_code: "",
       phone: "",
       email: "",
-      manager_name: "",
-      manager_phone: "",
-      manager_email: "",
+      manager_id: null,
       status: "active"
     });
     setIsEditing(false);
     setSelectedBranch(null);
   };
 
+  const handleOpenDialog = () => {
+    resetForm();
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    resetForm();
+    setOpenDialog(false);
+  };
+
   return (
-    <section className="branch-office-settings">
-      <h3>{isEditing ? 'Edit Branch Office' : 'Create New Branch Office'}</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="form-section">
-          <h4>Branch Information</h4>
-          <div className="form-group">
-            <label>Branch Name:</label>
-            <input
-              type="text"
-              name="branch_name"
-              value={formData.branch_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Address:</label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>City:</label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>State:</label>
-              <input
-                type="text"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Pincode:</label>
-              <input
-                type="text"
-                name="pincode"
-                value={formData.pincode}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Phone:</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Email:</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-        </div>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5">Branch Offices</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpenDialog}
+        >
+          Add New Branch
+        </Button>
+      </Box>
 
-        <div className="form-section">
-          <h4>Branch Manager Information</h4>
-          <div className="form-group">
-            <label>Manager Name:</label>
-            <input
-              type="text"
-              name="manager_name"
-              value={formData.manager_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Manager Phone:</label>
-              <input
-                type="tel"
-                name="manager_phone"
-                value={formData.manager_phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Manager Email:</label>
-              <input
-                type="email"
-                name="manager_email"
-                value={formData.manager_email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-        </div>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-        <div className="form-section">
-          <h4>Status</h4>
-          <div className="form-group">
-            <label>Branch Status:</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              required
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
+      <TableContainer component={StyledPaper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Branch Name</TableCell>
+              <TableCell>Address</TableCell>
+              <TableCell>City</TableCell>
+              <TableCell>State</TableCell>
+              <TableCell>Phone</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {branches.map((branch) => (
+              <TableRow key={branch.branch_id}>
+                <TableCell>{branch.branch_name}</TableCell>
+                <TableCell>{branch.address}</TableCell>
+                <TableCell>{branch.city}</TableCell>
+                <TableCell>{branch.state}</TableCell>
+                <TableCell>{branch.phone}</TableCell>
+                <TableCell>{branch.email}</TableCell>
+                <TableCell>{branch.status}</TableCell>
+                <TableCell>
+                  <IconButton onClick={() => handleEdit(branch)} color="primary">
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDelete(branch.branch_id)} color="error">
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <div className="form-actions">
-          <button type="submit" className="save-btn">
-            {isEditing ? 'Update Branch' : 'Create Branch'}
-          </button>
-          <button type="button" className="cancel-btn" onClick={resetForm}>
-            Cancel
-          </button>
-        </div>
-      </form>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {isEditing ? 'Edit Branch Office' : 'Create New Branch Office'}
+        </DialogTitle>
+        <DialogContent>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom>Branch Information</Typography>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Branch Name"
+                  name="branch_name"
+                  value={formData.branch_name}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
 
-      <div className="existing-branches">
-        <h4>Existing Branch Offices</h4>
-        <div className="branches-list">
-          {branches.map((branch) => (
-            <div key={branch.branch_id} className="branch-card">
-              <div className="branch-info">
-                <h5>{branch.branch_name}</h5>
-                <p>{branch.address}</p>
-                <p>{branch.city}, {branch.state} - {branch.pincode}</p>
-                <p>Manager: {branch.manager_name}</p>
-                <p>Status: <span className={`status ${branch.status}`}>{branch.status}</span></p>
-              </div>
-              <div className="branch-actions">
-                <button onClick={() => handleEdit(branch)} className="edit-btn">Edit</button>
-                <button onClick={() => handleDelete(branch.branch_id)} className="delete-btn">Delete</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  multiline
+                  rows={3}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="City"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="State"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Postal Code"
+                  name="postal_code"
+                  value={formData.postal_code}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Country"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.status === 'active'}
+                      onChange={(e) => handleChange({
+                        target: {
+                          name: 'status',
+                          value: e.target.checked ? 'active' : 'inactive'
+                        }
+                      })}
+                    />
+                  }
+                  label="Active"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button 
+            onClick={handleSubmit} 
+            variant="contained" 
+            color="primary"
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={success}
+        autoHideDuration={6000}
+        onClose={() => setSuccess(false)}
+      >
+        <Alert onClose={() => setSuccess(false)} severity="success">
+          Branch office {isEditing ? 'updated' : 'created'} successfully!
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 } 

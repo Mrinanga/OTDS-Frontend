@@ -172,6 +172,67 @@ const apiService = {
         });
     },
 
+    createBranch: (branchData) => {
+        return axios.post(`${API_CONFIG.BASE_URL}/branches`, branchData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    },
+
+    updateBranch: (branchId, branchData) => {
+        return axios.put(`${API_CONFIG.BASE_URL}/branches/${branchId}`, branchData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    },
+
+    deleteBranch: (branchId) => {
+        return axios.delete(`${API_CONFIG.BASE_URL}/branches/${branchId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    // User management methods
+    getUsers: () => {
+        return axios.get(`${API_CONFIG.BASE_URL}/users`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    createUser: (userData) => {
+        return axios.post(`${API_CONFIG.BASE_URL}/users`, userData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    },
+
+    updateUser: (userId, userData) => {
+        return axios.put(`${API_CONFIG.BASE_URL}/users/${userId}`, userData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    },
+
+    deleteUser: (userId) => {
+        return axios.delete(`${API_CONFIG.BASE_URL}/users/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
     // Executive related methods
     getExecutives: async () => {
         try {

@@ -1,14 +1,96 @@
 // src/components/forms/SecurityForm.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Divider,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  Select,
+  MenuItem,
+  InputLabel,
+  IconButton,
+  InputAdornment,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  LinearProgress,
+  Box,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Visibility, VisibilityOff, QrCode2 } from '@mui/icons-material';
+import * as settingsService from '../../services/settingsService';
 
-export default function SecurityForm({ formData, handleChange }) {
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+}));
+
+const SecuritySettings = () => {
+  const [formData, setFormData] = useState({
+    twoFA: false,
+    twoFAMethod: 'authenticator',
+    sessionTimeout: 30,
+    alertNewLogin: true,
+    alertPasswordChange: true,
+    alertSecuritySettings: true
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: ""
   });
+
+  useEffect(() => {
+    loadSecuritySettings();
+  }, []);
+
+  const loadSecuritySettings = async () => {
+    try {
+      setLoading(true);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('User data not found');
+      }
+      const response = await settingsService.getSecuritySettings(user.id);
+      setFormData(response.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
@@ -18,282 +100,310 @@ export default function SecurityForm({ formData, handleChange }) {
     }));
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    // Add password change logic here
-    console.log("Password change requested:", passwordData);
-    alert("Password changed successfully!");
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: ""
-    });
+    try {
+      setLoading(true);
+      setError(null);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('User data not found');
+      }
+      // Add password change API call here
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError(null);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('User data not found');
+      }
+      await settingsService.updateSecuritySettings(user.id, formData);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculatePasswordStrength = (password) => {
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (/[A-Z]/.test(password)) strength += 25;
+    if (/[a-z]/.test(password)) strength += 25;
+    if (/[0-9]/.test(password)) strength += 25;
+    return strength;
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" my={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <section className="security-settings">
-      <h3>Security Settings</h3>
+    <form onSubmit={handleSubmit}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Settings updated successfully!
+        </Alert>
+      )}
 
-      <div className="form-section">
-        <h4>Two-Factor Authentication (2FA)</h4>
-        <div className="security-option">
-          <div className="security-header">
-            <label>
-              <input
-                type="checkbox"
-                name="twoFA"
-                checked={formData.twoFA}
-                onChange={handleChange}
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Two-Factor Authentication (2FA)
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="twoFA"
+                    checked={formData.twoFA}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Enable Two-Factor Authentication"
               />
-              Enable Two-Factor Authentication
-            </label>
-          </div>
-          <p className="help-text">
-            Add an extra layer of security to your account by requiring a verification code in addition to your password.
-          </p>
+            </FormGroup>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Add an extra layer of security to your account by requiring a verification code in addition to your password.
+            </Typography>
+          </Grid>
           {formData.twoFA && (
-            <div className="twofa-setup">
-              <div className="form-group">
-                <label>Verification Method:</label>
-                <select
-                  name="twoFAMethod"
-                  value={formData.twoFAMethod}
-                  onChange={handleChange}
-                >
-                  <option value="authenticator">Authenticator App</option>
-                  <option value="sms">SMS</option>
-                  <option value="email">Email</option>
-                </select>
-              </div>
+            <>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Verification Method</InputLabel>
+                  <Select
+                    name="twoFAMethod"
+                    value={formData.twoFAMethod}
+                    onChange={handleInputChange}
+                    label="Verification Method"
+                  >
+                    <MenuItem value="authenticator">Authenticator App</MenuItem>
+                    <MenuItem value="sms">SMS</MenuItem>
+                    <MenuItem value="email">Email</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
               {formData.twoFAMethod === 'authenticator' && (
-                <div className="authenticator-setup">
-                  <p>Scan this QR code with your authenticator app:</p>
-                  <div className="qr-code-placeholder">
-                    {/* Add QR code component here */}
-                    <div className="qr-code">QR Code</div>
-                  </div>
-                  <p className="backup-codes">
-                    Backup Codes: <button type="button">Generate New Codes</button>
-                  </p>
-                </div>
+                <Grid item xs={12}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<QrCode2 />}
+                    onClick={() => setShowQRCode(true)}
+                  >
+                    Show QR Code
+                  </Button>
+                  <Button
+                    variant="text"
+                    sx={{ ml: 2 }}
+                  >
+                    Generate New Backup Codes
+                  </Button>
+                </Grid>
               )}
-            </div>
+            </>
           )}
-        </div>
-      </div>
+        </Grid>
+      </StyledPaper>
 
-      <div className="form-section">
-        <h4>Password Management</h4>
-        <form onSubmit={handlePasswordSubmit} className="password-form">
-          <div className="form-group">
-            <label>Current Password:</label>
-            <div className="password-input">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                required
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Password Management
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Current Password"
+              type={showPassword ? 'text' : 'password'}
+              name="currentPassword"
+              value={passwordData.currentPassword}
+              onChange={handlePasswordChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="New Password"
+              type={showPassword ? 'text' : 'password'}
+              name="newPassword"
+              value={passwordData.newPassword}
+              onChange={handlePasswordChange}
+            />
+            <Box sx={{ mt: 1 }}>
+              <LinearProgress
+                variant="determinate"
+                value={calculatePasswordStrength(passwordData.newPassword)}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: 'grey.200',
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: passwordData.newPassword.length >= 8 ? 'success.main' : 'error.main',
+                  },
+                }}
               />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>New Password:</label>
-            <div className="password-input">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordChange}
-                required
-              />
-            </div>
-            <div className="password-strength">
-              <div className="strength-meter">
-                <div className="strength-bar" style={{ width: "0%" }}></div>
-              </div>
-              <span className="strength-text">Password strength: Weak</span>
-            </div>
-            <ul className="password-requirements">
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                Password strength: {passwordData.newPassword.length >= 8 ? 'Strong' : 'Weak'}
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              Password requirements:
+            </Typography>
+            <Typography variant="caption" color="text.secondary" component="ul" sx={{ pl: 2 }}>
               <li>At least 8 characters long</li>
               <li>Include uppercase and lowercase letters</li>
               <li>Include at least one number</li>
               <li>Include at least one special character</li>
-            </ul>
-          </div>
-
-          <div className="form-group">
-            <label>Confirm New Password:</label>
-            <div className="password-input">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordChange}
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" className="change-password-btn">
-            Change Password
-          </button>
-        </form>
-      </div>
-
-      <div className="form-section">
-        <h4>Session Management</h4>
-        <div className="security-option">
-          <div className="form-group">
-            <label>Session Timeout:</label>
-            <select
-              name="sessionTimeout"
-              value={formData.sessionTimeout}
-              onChange={handleChange}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Confirm New Password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      edge="end"
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={handlePasswordSubmit}
+              disabled={loading}
             >
-              <option value="15">15 minutes</option>
-              <option value="30">30 minutes</option>
-              <option value="60">1 hour</option>
-              <option value="120">2 hours</option>
-              <option value="240">4 hours</option>
-            </select>
-          </div>
-          <p className="help-text">
-            Automatically log out after a period of inactivity
-          </p>
-        </div>
+              {loading ? 'Changing Password...' : 'Change Password'}
+            </Button>
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        <div className="active-sessions">
-          <h5>Active Sessions</h5>
-          <div className="session-list">
-            <div className="session-item">
-              <div className="session-info">
-                <span className="device">Windows PC - Chrome</span>
-                <span className="location">Mumbai, India</span>
-                <span className="time">Current Session</span>
-              </div>
-              <button type="button" className="end-session-btn">
-                End Session
-              </button>
-            </div>
-            <div className="session-item">
-              <div className="session-info">
-                <span className="device">iPhone - Safari</span>
-                <span className="location">Delhi, India</span>
-                <span className="time">Last active: 2 hours ago</span>
-              </div>
-              <button type="button" className="end-session-btn">
-                End Session
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section">
-        <h4>Login History</h4>
-        <div className="login-history">
-          <table className="history-table">
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>Device</th>
-                <th>Location</th>
-                <th>IP Address</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>2024-03-15 14:30</td>
-                <td>Windows PC - Chrome</td>
-                <td>Mumbai, India</td>
-                <td>192.168.1.1</td>
-                <td className="status success">Successful</td>
-              </tr>
-              <tr>
-                <td>2024-03-15 10:15</td>
-                <td>iPhone - Safari</td>
-                <td>Delhi, India</td>
-                <td>192.168.1.2</td>
-                <td className="status success">Successful</td>
-              </tr>
-              <tr>
-                <td>2024-03-14 18:45</td>
-                <td>Unknown Device</td>
-                <td>Unknown Location</td>
-                <td>192.168.1.3</td>
-                <td className="status failed">Failed</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="form-section">
-        <h4>Security Alerts</h4>
-        <div className="security-option">
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="alertNewLogin"
-                checked={formData.alertNewLogin}
-                onChange={handleChange}
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Session Management
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Session Timeout</InputLabel>
+              <Select
+                name="sessionTimeout"
+                value={formData.sessionTimeout}
+                onChange={handleInputChange}
+                label="Session Timeout"
+              >
+                <MenuItem value={15}>15 minutes</MenuItem>
+                <MenuItem value={30}>30 minutes</MenuItem>
+                <MenuItem value={60}>1 hour</MenuItem>
+                <MenuItem value={120}>2 hours</MenuItem>
+                <MenuItem value={240}>4 hours</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="alertNewLogin"
+                    checked={formData.alertNewLogin}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Alert me on new login"
               />
-              Alert on New Login
-            </label>
-            <p className="help-text">
-              Receive an email notification when your account is accessed from a new device or location
-            </p>
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="alertPasswordChange"
-                checked={formData.alertPasswordChange}
-                onChange={handleChange}
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="alertPasswordChange"
+                    checked={formData.alertPasswordChange}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Alert me on password change"
               />
-              Alert on Password Change
-            </label>
-            <p className="help-text">
-              Receive an email notification when your password is changed
-            </p>
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="alertSecuritySettings"
-                checked={formData.alertSecuritySettings}
-                onChange={handleChange}
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="alertSecuritySettings"
+                    checked={formData.alertSecuritySettings}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Alert me on security settings change"
               />
-              Alert on Security Settings Change
-            </label>
-            <p className="help-text">
-              Receive an email notification when security settings are modified
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+            </FormGroup>
+          </Grid>
+        </Grid>
+      </StyledPaper>
+
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        size="large"
+        sx={{ mt: 2 }}
+        disabled={loading}
+      >
+        {loading ? 'Saving...' : 'Save Changes'}
+      </Button>
+    </form>
   );
-}
+};
+
+export default SecuritySettings;

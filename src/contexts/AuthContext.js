@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import API_CONFIG from '../config/api.config';
 
 const AuthContext = createContext();
 
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         // Fetch user data
-        const response = await axios.get('/api/auth/user');
+        const response = await axios.get(`${API_CONFIG.BASE_URL}/customers/profile`);
         setUser(response.data.data);
       }
     } catch (err) {
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setError(null);
-      const response = await axios.post('/api/auth/login', credentials);
+      const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, credentials);
       const { token, user } = response.data.data;
       
       // Store token
@@ -64,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setError(null);
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMERS.CREATE}`, userData);
       const { token, user } = response.data.data;
       
       // Store token
@@ -97,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     try {
       setError(null);
-      const response = await axios.put('/api/auth/profile', profileData);
+      const response = await axios.put(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMERS.UPDATE}`, profileData);
       setUser(response.data.data);
       return response.data.data;
     } catch (err) {
@@ -109,7 +110,7 @@ export const AuthProvider = ({ children }) => {
   const changePassword = async (passwordData) => {
     try {
       setError(null);
-      await axios.put('/api/auth/password', passwordData);
+      await axios.put(`${API_CONFIG.BASE_URL}/auth/password`, passwordData);
     } catch (err) {
       setError(err.response?.data?.message || 'Password change failed');
       throw err;
@@ -119,7 +120,7 @@ export const AuthProvider = ({ children }) => {
   const forgotPassword = async (email) => {
     try {
       setError(null);
-      await axios.post('/api/auth/forgot-password', { email });
+      await axios.post(`${API_CONFIG.BASE_URL}/auth/forgot-password`, { email });
     } catch (err) {
       setError(err.response?.data?.message || 'Password reset request failed');
       throw err;
@@ -129,7 +130,7 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (resetData) => {
     try {
       setError(null);
-      await axios.post('/api/auth/reset-password', resetData);
+      await axios.post(`${API_CONFIG.BASE_URL}/auth/reset-password`, resetData);
     } catch (err) {
       setError(err.response?.data?.message || 'Password reset failed');
       throw err;

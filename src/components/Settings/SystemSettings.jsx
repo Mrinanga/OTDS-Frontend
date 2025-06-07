@@ -1,6 +1,41 @@
 // src/components/forms/SystemForm.js
 import React, { useState, useEffect } from 'react';
+import {
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Divider,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  Select,
+  MenuItem,
+  InputLabel,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  Slider,
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  IconButton,
+  Tooltip
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Info, Save, Refresh, Backup, Settings } from '@mui/icons-material';
 import axios from 'axios';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+}));
 
 const SystemSettings = () => {
   const [formData, setFormData] = useState({
@@ -58,6 +93,11 @@ const SystemSettings = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   useEffect(() => {
     fetchSystemSettings();
@@ -70,6 +110,11 @@ const SystemSettings = () => {
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching system settings:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error loading system settings',
+        severity: 'error'
+      });
       setIsLoading(false);
     }
   };
@@ -88,464 +133,557 @@ const SystemSettings = () => {
     try {
       await axios.put('/api/system/settings', formData);
       setSaveStatus('success');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setSnackbar({
+        open: true,
+        message: 'Settings saved successfully',
+        severity: 'success'
+      });
     } catch (error) {
       console.error('Error saving system settings:', error);
       setSaveStatus('error');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setSnackbar({
+        open: true,
+        message: 'Error saving settings',
+        severity: 'error'
+      });
     }
   };
 
   if (isLoading) {
-    return <div className="loading">Loading system settings...</div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <div className="system-settings">
-      <form onSubmit={handleSubmit}>
-        {/* System Information Section */}
-        <div className="settings-section">
-          <h3>System Information</h3>
-          <div className="info-grid">
-            <div className="info-item">
-              <label>System Name</label>
-              <input
-                type="text"
-                name="systemName"
-                value={formData.systemName}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="info-item">
-              <label>System Version</label>
-              <input
-                type="text"
-                name="systemVersion"
-                value={formData.systemVersion}
-                readOnly
-                className="readonly"
-              />
-            </div>
-            <div className="info-item">
-              <label>Last Update</label>
-              <input
-                type="text"
-                name="lastUpdate"
-                value={formData.lastUpdate}
-                readOnly
-                className="readonly"
-              />
-            </div>
-          </div>
-        </div>
+    <form onSubmit={handleSubmit}>
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          System Information
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="System Name"
+              name="systemName"
+              value={formData.systemName}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="System Version"
+              name="systemVersion"
+              value={formData.systemVersion}
+              InputProps={{ readOnly: true }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Last Update"
+              name="lastUpdate"
+              value={formData.lastUpdate}
+              InputProps={{ readOnly: true }}
+            />
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* General Settings Section */}
-        <div className="settings-section">
-          <h3>General Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>Timezone</label>
-              <select
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          General Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Timezone</InputLabel>
+              <Select
                 name="timezone"
                 value={formData.timezone}
                 onChange={handleInputChange}
+                label="Timezone"
               >
-                <option value="Asia/Kolkata">India (IST)</option>
-                <option value="UTC">UTC</option>
-                <option value="America/New_York">Eastern Time</option>
-                <option value="Europe/London">London (GMT)</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Date Format</label>
-              <select
+                <MenuItem value="Asia/Kolkata">India (IST)</MenuItem>
+                <MenuItem value="UTC">UTC</MenuItem>
+                <MenuItem value="America/New_York">Eastern Time</MenuItem>
+                <MenuItem value="Europe/London">London (GMT)</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Date Format</InputLabel>
+              <Select
                 name="dateFormat"
                 value={formData.dateFormat}
                 onChange={handleInputChange}
+                label="Date Format"
               >
-                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Time Format</label>
-              <select
+                <MenuItem value="DD/MM/YYYY">DD/MM/YYYY</MenuItem>
+                <MenuItem value="MM/DD/YYYY">MM/DD/YYYY</MenuItem>
+                <MenuItem value="YYYY-MM-DD">YYYY-MM-DD</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Time Format</InputLabel>
+              <Select
                 name="timeFormat"
                 value={formData.timeFormat}
                 onChange={handleInputChange}
+                label="Time Format"
               >
-                <option value="24h">24-hour</option>
-                <option value="12h">12-hour</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Language</label>
-              <select
+                <MenuItem value="24h">24-hour</MenuItem>
+                <MenuItem value="12h">12-hour</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Language</InputLabel>
+              <Select
                 name="language"
                 value={formData.language}
                 onChange={handleInputChange}
+                label="Language"
               >
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-              </select>
-            </div>
-          </div>
-        </div>
+                <MenuItem value="en">English</MenuItem>
+                <MenuItem value="hi">Hindi</MenuItem>
+                <MenuItem value="es">Spanish</MenuItem>
+                <MenuItem value="fr">French</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* Delivery Settings Section */}
-        <div className="settings-section">
-          <h3>Delivery Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>Max Delivery Radius (km)</label>
-              <input
-                type="number"
-                name="maxDeliveryRadius"
-                value={formData.maxDeliveryRadius}
-                onChange={handleInputChange}
-                min="1"
-                max="100"
-              />
-            </div>
-            <div className="form-group">
-              <label>Default Delivery Slot</label>
-              <select
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Delivery Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <Typography gutterBottom>
+              Max Delivery Radius (km)
+            </Typography>
+            <Slider
+              name="maxDeliveryRadius"
+              value={formData.maxDeliveryRadius}
+              onChange={handleInputChange}
+              min={1}
+              max={100}
+              marks
+              valueLabelDisplay="auto"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Default Delivery Slot</InputLabel>
+              <Select
                 name="defaultDeliverySlot"
                 value={formData.defaultDeliverySlot}
                 onChange={handleInputChange}
+                label="Default Delivery Slot"
               >
-                <option value="morning">Morning (9 AM - 12 PM)</option>
-                <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
-                <option value="evening">Evening (4 PM - 8 PM)</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Default Pickup Slot</label>
-              <select
+                <MenuItem value="morning">Morning (9 AM - 12 PM)</MenuItem>
+                <MenuItem value="afternoon">Afternoon (12 PM - 4 PM)</MenuItem>
+                <MenuItem value="evening">Evening (4 PM - 8 PM)</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Default Pickup Slot</InputLabel>
+              <Select
                 name="defaultPickupSlot"
                 value={formData.defaultPickupSlot}
                 onChange={handleInputChange}
+                label="Default Pickup Slot"
               >
-                <option value="morning">Morning (9 AM - 12 PM)</option>
-                <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
-                <option value="evening">Evening (4 PM - 8 PM)</option>
-              </select>
-            </div>
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="autoAssignPickups"
-                  checked={formData.autoAssignPickups}
-                  onChange={handleInputChange}
-                />
-                Auto-assign Pickups
-              </label>
-            </div>
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="enableRouteOptimization"
-                  checked={formData.enableRouteOptimization}
-                  onChange={handleInputChange}
-                />
-                Enable Route Optimization
-              </label>
-            </div>
-          </div>
-        </div>
+                <MenuItem value="morning">Morning (9 AM - 12 PM)</MenuItem>
+                <MenuItem value="afternoon">Afternoon (12 PM - 4 PM)</MenuItem>
+                <MenuItem value="evening">Evening (4 PM - 8 PM)</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="autoAssignPickups"
+                    checked={formData.autoAssignPickups}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Auto-assign Pickups"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="enableRouteOptimization"
+                    checked={formData.enableRouteOptimization}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Enable Route Optimization"
+              />
+            </FormGroup>
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* Performance Settings Section */}
-        <div className="settings-section">
-          <h3>Performance Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>Refresh Interval (seconds)</label>
-              <input
-                type="number"
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Performance Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Refresh Interval (seconds)</InputLabel>
+              <Select
                 name="refreshInterval"
                 value={formData.refreshInterval}
                 onChange={handleInputChange}
-                min="30"
-                max="300"
-              />
-            </div>
-            <div className="form-group">
-              <label>Max Concurrent Deliveries</label>
-              <input
-                type="number"
-                name="maxConcurrentDeliveries"
-                value={formData.maxConcurrentDeliveries}
-                onChange={handleInputChange}
-                min="1"
-                max="1000"
-              />
-            </div>
-            <div className="form-group">
-              <label>Max Pickup Attempts</label>
-              <input
-                type="number"
-                name="maxPickupAttempts"
-                value={formData.maxPickupAttempts}
-                onChange={handleInputChange}
-                min="1"
-                max="5"
-              />
-            </div>
-            <div className="form-group">
-              <label>Delivery Timeout (minutes)</label>
-              <input
-                type="number"
-                name="deliveryTimeout"
-                value={formData.deliveryTimeout}
-                onChange={handleInputChange}
-                min="15"
-                max="120"
-              />
-            </div>
-          </div>
-        </div>
+                label="Refresh Interval (seconds)"
+              >
+                <MenuItem value="30">30 seconds</MenuItem>
+                <MenuItem value="60">1 minute</MenuItem>
+                <MenuItem value="300">5 minutes</MenuItem>
+                <MenuItem value="600">10 minutes</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Max Concurrent Deliveries"
+              name="maxConcurrentDeliveries"
+              value={formData.maxConcurrentDeliveries}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 1, max: 1000 } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Max Pickup Attempts"
+              name="maxPickupAttempts"
+              value={formData.maxPickupAttempts}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 1, max: 10 } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Delivery Timeout (minutes)"
+              name="deliveryTimeout"
+              value={formData.deliveryTimeout}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 5, max: 120 } }}
+            />
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* Integration Settings Section */}
-        <div className="settings-section">
-          <h3>Integration Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>SMS Gateway</label>
-              <select
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Integration Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>SMS Gateway</InputLabel>
+              <Select
                 name="smsGateway"
                 value={formData.smsGateway}
                 onChange={handleInputChange}
+                label="SMS Gateway"
               >
-                <option value="twilio">Twilio</option>
-                <option value="msg91">MSG91</option>
-                <option value="nexmo">Nexmo</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Email Provider</label>
-              <select
+                <MenuItem value="twilio">Twilio</MenuItem>
+                <MenuItem value="messagebird">MessageBird</MenuItem>
+                <MenuItem value="nexmo">Nexmo</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Email Provider</InputLabel>
+              <Select
                 name="emailProvider"
                 value={formData.emailProvider}
                 onChange={handleInputChange}
+                label="Email Provider"
               >
-                <option value="smtp">SMTP</option>
-                <option value="sendgrid">SendGrid</option>
-                <option value="mailgun">Mailgun</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Map Provider</label>
-              <select
+                <MenuItem value="smtp">SMTP</MenuItem>
+                <MenuItem value="sendgrid">SendGrid</MenuItem>
+                <MenuItem value="mailgun">Mailgun</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Map Provider</InputLabel>
+              <Select
                 name="mapProvider"
                 value={formData.mapProvider}
                 onChange={handleInputChange}
+                label="Map Provider"
               >
-                <option value="google">Google Maps</option>
-                <option value="mapbox">Mapbox</option>
-                <option value="here">HERE Maps</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Payment Gateway</label>
-              <select
+                <MenuItem value="google">Google Maps</MenuItem>
+                <MenuItem value="mapbox">Mapbox</MenuItem>
+                <MenuItem value="here">HERE Maps</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Payment Gateway</InputLabel>
+              <Select
                 name="paymentGateway"
                 value={formData.paymentGateway}
                 onChange={handleInputChange}
+                label="Payment Gateway"
               >
-                <option value="stripe">Stripe</option>
-                <option value="razorpay">Razorpay</option>
-                <option value="paypal">PayPal</option>
-              </select>
-            </div>
-          </div>
-        </div>
+                <MenuItem value="stripe">Stripe</MenuItem>
+                <MenuItem value="paypal">PayPal</MenuItem>
+                <MenuItem value="razorpay">Razorpay</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* Backup Settings Section */}
-        <div className="settings-section">
-          <h3>Backup Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>Backup Frequency</label>
-              <select
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Backup Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Backup Frequency</InputLabel>
+              <Select
                 name="backupFrequency"
                 value={formData.backupFrequency}
                 onChange={handleInputChange}
+                label="Backup Frequency"
               >
-                <option value="hourly">Hourly</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Backup Time</label>
-              <input
-                type="time"
-                name="backupTime"
-                value={formData.backupTime}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Retention Period (days)</label>
-              <input
-                type="number"
-                name="retentionPeriod"
-                value={formData.retentionPeriod}
-                onChange={handleInputChange}
-                min="1"
-                max="365"
-              />
-            </div>
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
+                <MenuItem value="hourly">Hourly</MenuItem>
+                <MenuItem value="daily">Daily</MenuItem>
+                <MenuItem value="weekly">Weekly</MenuItem>
+                <MenuItem value="monthly">Monthly</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              type="time"
+              label="Backup Time"
+              name="backupTime"
+              value={formData.backupTime}
+              onChange={handleInputChange}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Retention Period (days)"
+              name="retentionPeriod"
+              value={formData.retentionPeriod}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 1, max: 365 } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControlLabel
+              control={
+                <Switch
                   name="autoBackup"
                   checked={formData.autoBackup}
                   onChange={handleInputChange}
                 />
-                Enable Automatic Backup
-              </label>
-            </div>
-          </div>
-        </div>
+              }
+              label="Enable Auto Backup"
+            />
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* Maintenance Settings Section */}
-        <div className="settings-section">
-          <h3>Maintenance Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Maintenance Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControlLabel
+              control={
+                <Switch
                   name="maintenanceMode"
                   checked={formData.maintenanceMode}
                   onChange={handleInputChange}
                 />
-                Enable Maintenance Mode
-              </label>
-            </div>
-            <div className="form-group">
-              <label>Maintenance Message</label>
-              <textarea
-                name="maintenanceMessage"
-                value={formData.maintenanceMessage}
-                onChange={handleInputChange}
-                rows="3"
-                placeholder="Enter maintenance message..."
-              />
-            </div>
-            <div className="form-group">
-              <label>Maintenance Schedule</label>
-              <input
-                type="datetime-local"
-                name="maintenanceSchedule"
-                value={formData.maintenanceSchedule}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-        </div>
+              }
+              label="Maintenance Mode"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="datetime-local"
+              label="Maintenance Schedule"
+              name="maintenanceSchedule"
+              value={formData.maintenanceSchedule}
+              onChange={handleInputChange}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Maintenance Message"
+              name="maintenanceMessage"
+              value={formData.maintenanceMessage}
+              onChange={handleInputChange}
+              placeholder="Enter maintenance message to display to users"
+            />
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* API Settings Section */}
-        <div className="settings-section">
-          <h3>API Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>API Rate Limit (requests/hour)</label>
-              <input
-                type="number"
-                name="apiRateLimit"
-                value={formData.apiRateLimit}
-                onChange={handleInputChange}
-                min="100"
-                max="10000"
-              />
-            </div>
-            <div className="form-group">
-              <label>API Timeout (seconds)</label>
-              <input
-                type="number"
-                name="apiTimeout"
-                value={formData.apiTimeout}
-                onChange={handleInputChange}
-                min="5"
-                max="60"
-              />
-            </div>
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          API Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="API Rate Limit (requests/minute)"
+              name="apiRateLimit"
+              value={formData.apiRateLimit}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 100, max: 10000 } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="API Timeout (seconds)"
+              name="apiTimeout"
+              value={formData.apiTimeout}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 5, max: 300 } }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
                   name="enableApiLogging"
                   checked={formData.enableApiLogging}
                   onChange={handleInputChange}
                 />
-                Enable API Logging
-              </label>
-            </div>
-          </div>
-        </div>
+              }
+              label="Enable API Logging"
+            />
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        {/* Cache Settings Section */}
-        <div className="settings-section">
-          <h3>Cache Settings</h3>
-          <div className="settings-grid">
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
+      <StyledPaper>
+        <Typography variant="h6" gutterBottom>
+          Cache Settings
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <FormControlLabel
+              control={
+                <Switch
                   name="cacheEnabled"
                   checked={formData.cacheEnabled}
                   onChange={handleInputChange}
                 />
-                Enable Caching
-              </label>
-            </div>
-            <div className="form-group">
-              <label>Cache Duration (seconds)</label>
-              <input
-                type="number"
-                name="cacheDuration"
-                value={formData.cacheDuration}
-                onChange={handleInputChange}
-                min="60"
-                max="86400"
-              />
-            </div>
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
+              }
+              label="Enable Caching"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Cache Duration (seconds)"
+              name="cacheDuration"
+              value={formData.cacheDuration}
+              onChange={handleInputChange}
+              InputProps={{ inputProps: { min: 60, max: 86400 } }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
                   name="clearCacheOnUpdate"
                   checked={formData.clearCacheOnUpdate}
                   onChange={handleInputChange}
                 />
-                Clear Cache on Update
-              </label>
-            </div>
-          </div>
-        </div>
+              }
+              label="Clear Cache on Update"
+            />
+          </Grid>
+        </Grid>
+      </StyledPaper>
 
-        <div className="form-actions">
-          <button type="submit" className="save-btn">
-            {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
-          </button>
-          {saveStatus === 'success' && (
-            <span className="success-message">Settings saved successfully!</span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="error-message">Error saving settings. Please try again.</span>
-          )}
-        </div>
-      </form>
-    </div>
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<Refresh />}
+          onClick={fetchSystemSettings}
+        >
+          Refresh
+        </Button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          startIcon={<Save />}
+          disabled={saveStatus === 'saving'}
+        >
+          {saveStatus === 'saving' ? 'Saving...' : 'Save Settings'}
+        </Button>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </form>
   );
 };
 
