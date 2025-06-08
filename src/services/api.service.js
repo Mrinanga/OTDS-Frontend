@@ -265,12 +265,24 @@ const apiService = {
         }
     },
 
-    getAllShipments: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/shipments`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+    getAllShipments: async () => {
+        try {
+            console.log('Making API request to fetch all shipments');
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/shipments`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            console.log('API Response:', response);
+            return response;
+        } catch (error) {
+            console.error('Error in getAllShipments:', error);
+            if (error.response) {
+                console.error('Error response:', error.response.data);
+                throw new Error(error.response.data.message || 'Failed to fetch shipments');
             }
-        });
+            throw error;
+        }
     },
 
     getFilteredShipments: (status) => {
@@ -463,7 +475,53 @@ const apiService = {
             console.error('Error assigning pickup:', error);
             throw error;
         }
-    }
+    },
+
+    // Final Destination APIs
+    getFinalDestinationShipments: (destinationId) => {
+        return axios.get(`${API_CONFIG.BASE_URL}/api/final-destination/shipments/${destinationId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    assignExecutive: (shipmentId, executiveId) => {
+        return axios.post(`${API_CONFIG.BASE_URL}/shipments/${shipmentId}/assign-executive`, {
+            executive_id: executiveId
+        }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    updateToOutForDelivery: (shipmentId) => {
+        return axios.post(`${API_CONFIG.BASE_URL}/shipments/${shipmentId}/out-for-delivery`, {}, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    updateToDelivered: (shipmentId, deliveryNotes) => {
+        return axios.post(`${API_CONFIG.BASE_URL}/api/final-destination/delivered`, {
+            shipment_id: shipmentId,
+            delivery_notes: deliveryNotes
+        }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
+
+    getAvailableExecutives: (branchId) => {
+        return axios.get(`${API_CONFIG.BASE_URL}/field-executive/branch/${branchId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    },
 };
 
 export default apiService;

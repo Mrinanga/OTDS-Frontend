@@ -1,7 +1,6 @@
 .destinations-container {
-  padding-left: 2rem;
-  padding-top: 2rem;
-  width: 96%;
+  padding: 20px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -10,9 +9,8 @@
 }
 
 .destinations-header h1 {
-  font-size: 24px;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .destinations-header p {
@@ -21,9 +19,6 @@
 }
 
 .destinations-controls {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
   margin-bottom: 20px;
 }
 
@@ -32,36 +27,28 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-  min-width: 200px;
 }
 
 .destinations-table-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .destinations-table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 20px;
 }
 
 .destinations-table th,
 .destinations-table td {
-  padding: 12px 15px;
+  padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #ddd;
 }
 
 .destinations-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #333;
-}
-
-.destinations-table tr:hover {
   background-color: #f5f5f5;
+  font-weight: 600;
 }
 
 .destination-row {
@@ -70,7 +57,11 @@
 }
 
 .destination-row:hover {
-  background-color: #f0f7ff !important;
+  background-color: #f5f5f5;
+}
+
+.destination-row.selected {
+  background-color: #e3f2fd;
 }
 
 .status-badge {
@@ -80,27 +71,17 @@
   font-weight: 500;
 }
 
-.status-badge.active {
-  background-color: #e6f4ea;
-  color: #1e7e34;
-}
-
-.status-badge.inactive {
-  background-color: #f8d7da;
-  color: #dc3545;
-}
-
-.status-badge.pending {
-  background-color: #fff3cd;
-  color: #856404;
-}
+.status-badge.active { background-color: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background-color: #ffebee; color: #c62828; }
+.status-badge.pending { background-color: #fff3e0; color: #ef6c00; }
+.status-badge.out-for-delivery { background-color: #e3f2fd; color: #1565c0; }
+.status-badge.delivered { background-color: #e8f5e9; color: #2e7d32; }
 
 .shipment-details-container {
   margin-top: 30px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
 
 .shipment-details-container h2 {
@@ -116,76 +97,198 @@
 .shipments-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .shipments-table th,
 .shipments-table td {
-  padding: 12px 15px;
+  padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #ddd;
 }
 
 .shipments-table th {
-  background-color: #f8f9fa;
+  background-color: #e3f2fd;
   font-weight: 600;
-  color: #333;
-}
-
-.shipments-table tr:hover {
-  background-color: #f5f5f5;
 }
 
 .package-details {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .package-details p {
   margin: 2px 0;
 }
 
-.close-shipment-details-btn {
-  background-color: #6c757d;
-  color: white;
+.shipment-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 12px;
   border: none;
-  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
 }
 
-.close-shipment-details-btn:hover {
-  background-color: #5a6268;
+.assign-btn {
+  background-color: #2196f3;
+  color: white;
 }
 
-.status-badge.in-transit {
-  background-color: #cce5ff;
-  color: #004085;
+.out-for-delivery-btn {
+  background-color: #ff9800;
+  color: white;
 }
 
-.status-badge.delivered {
-  background-color: #d4edda;
-  color: #155724;
+.delivered-btn {
+  background-color: #4caf50;
+  color: white;
 }
 
-.status-badge.cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
+.close-shipment-details-btn {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 10px;
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 15px;
   border-radius: 4px;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.loading {
+.close-error {
+  background: none;
+  border: none;
+  color: #c62828;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.no-data-message {
   text-align: center;
-  padding: 20px;
+  padding: 40px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.refresh-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.no-executives {
+  text-align: center;
   color: #666;
+  padding: 20px;
+}
+
+/* Executive Assignment Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 4px;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.executive-list {
+  margin: 20px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.executive-item {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.executive-item:hover {
+  background-color: #f5f5f5;
+}
+
+.executive-item p {
+  margin: 5px 0;
+}
+
+.close-modal-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .no-destinations {
