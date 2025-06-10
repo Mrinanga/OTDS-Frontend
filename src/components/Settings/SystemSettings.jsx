@@ -1,4 +1,4 @@
-// src/components/forms/SystemForm.js
+// src/components/Settings/SystemSettings.jsx
 import React, { useState, useEffect } from 'react';
 import {
   TextField,
@@ -31,6 +31,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { Info, Save, Refresh, Backup, Settings } from '@mui/icons-material';
 import axios from 'axios';
+import systemInfo from '../../config/systemInfo';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -40,9 +41,9 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 const SystemSettings = () => {
   const [formData, setFormData] = useState({
     // System Information
-    systemName: '',
-    systemVersion: '',
-    lastUpdate: '',
+    systemName: systemInfo.systemName,
+    systemVersion: systemInfo.systemVersion,
+    lastUpdate: systemInfo.lastUpdate,
     
     // General Settings
     timezone: 'Asia/Kolkata',
@@ -106,7 +107,13 @@ const SystemSettings = () => {
   const fetchSystemSettings = async () => {
     try {
       const response = await axios.get('/api/system/settings');
-      setFormData(response.data);
+      setFormData(prev => ({
+        ...response.data,
+        // Keep system info from config
+        systemName: systemInfo.systemName,
+        systemVersion: systemInfo.systemVersion,
+        lastUpdate: systemInfo.lastUpdate
+      }));
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching system settings:', error);
@@ -159,41 +166,47 @@ const SystemSettings = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <StyledPaper>
-        <Typography variant="h6" gutterBottom>
-          System Information
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="System Name"
-              name="systemName"
-              value={formData.systemName}
-              onChange={handleInputChange}
-              required
-            />
+      <Card sx={{ mb: 3 }}>
+        <CardHeader
+          title="System Information"
+          avatar={<Info color="primary" />}
+        />
+        <Divider />
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="System Name"
+                name="systemName"
+                value={formData.systemName}
+                InputProps={{ readOnly: true }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="System Version"
+                name="systemVersion"
+                value={formData.systemVersion}
+                InputProps={{ readOnly: true }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Last Update"
+                name="lastUpdate"
+                value={formData.lastUpdate}
+                InputProps={{ readOnly: true }}
+                variant="outlined"
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="System Version"
-              name="systemVersion"
-              value={formData.systemVersion}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Last Update"
-              name="lastUpdate"
-              value={formData.lastUpdate}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
-        </Grid>
-      </StyledPaper>
+        </CardContent>
+      </Card>
 
       <StyledPaper>
         <Typography variant="h6" gutterBottom>
@@ -298,45 +311,6 @@ const SystemSettings = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Default Pickup Slot</InputLabel>
-              <Select
-                name="defaultPickupSlot"
-                value={formData.defaultPickupSlot}
-                onChange={handleInputChange}
-                label="Default Pickup Slot"
-              >
-                <MenuItem value="morning">Morning (9 AM - 12 PM)</MenuItem>
-                <MenuItem value="afternoon">Afternoon (12 PM - 4 PM)</MenuItem>
-                <MenuItem value="evening">Evening (4 PM - 8 PM)</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="autoAssignPickups"
-                    checked={formData.autoAssignPickups}
-                    onChange={handleInputChange}
-                  />
-                }
-                label="Auto-assign Pickups"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="enableRouteOptimization"
-                    checked={formData.enableRouteOptimization}
-                    onChange={handleInputChange}
-                  />
-                }
-                label="Enable Route Optimization"
-              />
-            </FormGroup>
-          </Grid>
         </Grid>
       </StyledPaper>
 
@@ -370,28 +344,6 @@ const SystemSettings = () => {
               value={formData.maxConcurrentDeliveries}
               onChange={handleInputChange}
               InputProps={{ inputProps: { min: 1, max: 1000 } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Max Pickup Attempts"
-              name="maxPickupAttempts"
-              value={formData.maxPickupAttempts}
-              onChange={handleInputChange}
-              InputProps={{ inputProps: { min: 1, max: 10 } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Delivery Timeout (minutes)"
-              name="deliveryTimeout"
-              value={formData.deliveryTimeout}
-              onChange={handleInputChange}
-              InputProps={{ inputProps: { min: 5, max: 120 } }}
             />
           </Grid>
         </Grid>

@@ -4,7 +4,7 @@
   "private": true,
   "description": "OTDS Admin Desktop Application",
   "author": "OTDS Development Team",
-
+  // "homepage": "/myotds",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",

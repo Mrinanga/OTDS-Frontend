@@ -66,29 +66,43 @@ export default function LoginPage() {
       <div className="login-container">
         {/* Left Panel */}
         <div className="left-panel">
-          <h2>Start Shipping Today with<br />3 Simple Steps!</h2>
+          <h2>Start Shipping Today With<br />On Time Delivery Service</h2>
           <div className="step">
-            <span>1</span>
+            <span></span>
             <div>
-              <p className="step-title">KYC Verification</p>
-              <p className="step-desc">It takes only 30 secs to complete</p>
+              <p className="step-title">COURIER</p>
+              <p className="step-desc">"Delivering Trust, Every Parcel, Every Time."
+              </p>
             </div>
           </div>
           <div className="step">
-            <span>2</span>
+            <span></span>
             <div>
-              <p className="step-title">Recharge Your Wallet</p>
-              <p className="step-desc">Add Credits and start shipping today</p>
+              <p className="step-title">EXPRESS CARGO</p>
+              <p className="step-desc">"Speed That Moves Your Business Forward."
+              </p>
             </div>
           </div>
           <div className="step">
-            <span>3</span>
+            <span>
+            </span>
             <div>
-              <p className="step-title">Place Your Order</p>
-              <p className="step-desc">Create your order with 3 steps</p>
+              <p className="step-title">E-COMMERCE</p>
+              <p className="step-desc">"Powering Your Deliveries, Fueling Your Growth."
+              </p>
             </div>
           </div>
-          <img src="/delivery-guy.png" alt="Delivery Guy" className="delivery-image" />
+          <div className="step">
+            <span>
+            </span>
+            <div>
+              <p className="step-title">DOOR TO DOOR DELIVERY</p>
+              <p className="step-desc">""From Your Doorstep to Theirs – Hassle-Free Every Time."
+              "
+              </p>
+            </div>
+          </div>
+          <img src="./assets/logowhite.png" alt="Delivery Guy" className="delivery-image" />
         </div>
 
         {/* Right Panel */}

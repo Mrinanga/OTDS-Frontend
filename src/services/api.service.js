@@ -202,7 +202,8 @@ const apiService = {
     getUsers: () => {
         return axios.get(`${API_CONFIG.BASE_URL}/users`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
             }
         });
     },
@@ -477,50 +478,35 @@ const apiService = {
         }
     },
 
-    // Final Destination APIs
-    getFinalDestinationShipments: (destinationId) => {
-        return axios.get(`${API_CONFIG.BASE_URL}/api/final-destination/shipments/${destinationId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+    // Final Destination methods
+    getShipmentsByBranch: async (branchId) => {
+        try {
+            const response = await api.get(`/finaldestination/shipments/${branchId}`);
+            return response;
+        } catch (error) {
+            console.error('Error fetching shipments:', error);
+            throw error;
+        }
     },
 
-    assignExecutive: (shipmentId, executiveId) => {
-        return axios.post(`${API_CONFIG.BASE_URL}/shipments/${shipmentId}/assign-executive`, {
-            executive_id: executiveId
-        }, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+    getAvailableExecutives: async (branchId) => {
+        try {
+            const response = await api.get(`/finaldestination/executives/${branchId}`);
+            return response;
+        } catch (error) {
+            console.error('Error fetching available executives:', error);
+            throw error;
+        }
     },
 
-    updateToOutForDelivery: (shipmentId) => {
-        return axios.post(`${API_CONFIG.BASE_URL}/shipments/${shipmentId}/out-for-delivery`, {}, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-
-    updateToDelivered: (shipmentId, deliveryNotes) => {
-        return axios.post(`${API_CONFIG.BASE_URL}/api/final-destination/delivered`, {
-            shipment_id: shipmentId,
-            delivery_notes: deliveryNotes
-        }, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-
-    getAvailableExecutives: (branchId) => {
-        return axios.get(`${API_CONFIG.BASE_URL}/field-executive/branch/${branchId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+    assignExecutiveAndOutForDelivery: async (data) => {
+        try {
+            const response = await api.post('/finaldestination/out-for-delivery', data);
+            return response;
+        } catch (error) {
+            console.error('Error assigning executive:', error);
+            throw error;
+        }
     },
 };
 

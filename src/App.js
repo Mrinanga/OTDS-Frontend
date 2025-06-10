@@ -132,6 +132,70 @@ function App() {
                   </RoleRoute>
                 }
               />
+              <Route
+                path="/dashboard-branch/bookings"
+                element={
+                  <RoleRoute allowedRole="branch_office">
+                    <div className="app-container">
+                      <BranchSidebar />
+                      <div className="main-content">
+                        <BranchTopbar />
+                        <div className="page-content">
+                          <BookingCourierPage />
+                        </div>
+                      </div>
+                    </div>
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/dashboard-branch/pickup-requests"
+                element={
+                  <RoleRoute allowedRole="branch_office">
+                    <div className="app-container">
+                      <BranchSidebar />
+                      <div className="main-content">
+                        <BranchTopbar />
+                        <div className="page-content">
+                          <PickupPage />
+                        </div>
+                      </div>
+                    </div>
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/dashboard-branch/shipments"
+                element={
+                  <RoleRoute allowedRole="branch_office">
+                    <div className="app-container">
+                      <BranchSidebar />
+                      <div className="main-content">
+                        <BranchTopbar />
+                        <div className="page-content">
+                          <ShipmentsPage />
+                        </div>
+                      </div>
+                    </div>
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/dashboard-branch/finaldestination"
+                element={
+                  <RoleRoute allowedRole="branch_office">
+                    <div className="app-container">
+                      <BranchSidebar />
+                      <div className="main-content">
+                        <BranchTopbar />
+                        <div className="page-content">
+                          <FinalDestinationPage />
+                        </div>
+                      </div>
+                    </div>
+                  </RoleRoute>
+                }
+              />
 
               {/* Other Protected Routes */}
               <Route
@@ -201,7 +265,8 @@ function App() {
                   </PrivateRoute>
                 }
               />
-               <Route
+
+              <Route
                 path="/finaldestination"
                 element={
                   <PrivateRoute>
