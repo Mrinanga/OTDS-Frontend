@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import "../styles/shipments.css";
 import apiService from '../services/api.service';
+import generateShipmentLabel from '../utils/labelGenerator';
+import { 
+    IconButton, 
+    Menu, 
+    MenuItem, 
+    Button,
+    Tooltip
+} from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PrintIcon from '@mui/icons-material/Print';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 const ShipmentsPage = () => {
   const [shipments, setShipments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); // all, pending, in-transit, delivered
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedShipment, setSelectedShipment] = useState(null);
 
   useEffect(() => {
     fetchShipments();
@@ -19,8 +32,11 @@ const ShipmentsPage = () => {
         ? await apiService.getAllShipments()
         : await apiService.getFilteredShipments(filter);
       
+      console.log('Raw API response in fetchShipments:', response);
+
       if (response.data && response.data.data) {
         setShipments(response.data.data);
+        console.log('Shipments fetched:', response.data.data);
       } else {
         setShipments([]);
       }
@@ -63,6 +79,55 @@ const ShipmentsPage = () => {
       'cancelled': 'cancelled'
     };
     return statusMap[status.toLowerCase()] || 'pending';
+  };
+
+  const handleMenuOpen = (event, shipment) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedShipment(shipment);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedShipment(null);
+  };
+
+  const handlePrintLabel = async (shipmentId) => {
+    try {
+      // Fetch full shipment details before generating label
+      const response = await apiService.getShipmentById(shipmentId);
+      
+      // response.data is now expected to be the single shipment object directly
+      const fullShipmentData = response.data;
+
+      // Log the full shipment data to the console for inspection
+      console.log('Full Shipment Data for Label:', fullShipmentData);
+
+      if (!fullShipmentData) {
+        setError('Shipment data not found.');
+        return;
+      }
+
+      const doc = generateShipmentLabel(fullShipmentData);
+      const blob = new Blob([doc.output('blob')], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print();
+            URL.revokeObjectURL(url); // Clean up the object URL
+          }, 1000); // Give it a moment to render
+        };
+      } else {
+        // Fallback for pop-up blockers
+        alert('Please allow pop-ups for this site to print the label.');
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Error generating or printing label:', err);
+      setError(err.response?.data?.message || 'Failed to generate or print label.');
+    }
   };
 
   if (loading) {
@@ -112,7 +177,7 @@ const ShipmentsPage = () => {
             </thead>
             <tbody>
               {shipments.map((shipment) => (
-                <tr key={shipment.shipment_id}>
+                <tr key={shipment.id}>
                   <td>{shipment.tracking_number}</td>
                   <td>{shipment.origin_branch}</td>
                   <td>{shipment.destination_branch}</td>
@@ -123,30 +188,43 @@ const ShipmentsPage = () => {
                   </td>
                   <td>{new Date(shipment.created_at).toLocaleDateString()}</td>
                   <td className="actions-cell">
-                    {shipment.status === 'pending' && (
-                      <>
-                        <button 
-                          className="action-button update"
-                          onClick={() => handleStatusUpdate(shipment.shipment_id, 'in-transit')}
+                    <div className="action-buttons">
+                      <Tooltip title="Print Label">
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<PrintIcon />}
+                          onClick={() => handlePrintLabel(shipment.shipment_id)}
+                          className="action-button print"
                         >
-                          Start Transit
-                        </button>
-                        <button 
-                          className="action-button delete"
-                          onClick={() => handleDelete(shipment.shipment_id)}
+                          Print Label
+                        </Button>
+                      </Tooltip>
+
+                      {shipment.status === 'pending' && (
+                        <Tooltip title="Start Transit">
+                          <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<LocalShippingIcon />}
+                            onClick={() => handleStatusUpdate(shipment.shipment_id, 'in-transit')}
+                            className="action-button update"
+                          >
+                            Start Transit
+                          </Button>
+                        </Tooltip>
+                      )}
+
+                      <Tooltip title="More Options">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleMenuOpen(e, shipment)}
+                          className="more-options-button"
                         >
-                          Cancel
-                        </button>
-                      </>
-                    )}
-                    {shipment.status === 'in-transit' && (
-                      <button 
-                        className="action-button update"
-                        onClick={() => handleStatusUpdate(shipment.shipment_id, 'delivered')}
-                      >
-                        Mark Delivered
-                      </button>
-                    )}
+                          <MoreVertIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -154,6 +232,43 @@ const ShipmentsPage = () => {
           </table>
         )}
       </div>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        className="shipment-options-menu"
+      >
+        <MenuItem onClick={() => {
+          handleMenuClose();
+          // Add view details handler
+        }}>
+          View Details
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleMenuClose();
+          // Add edit shipment handler
+        }}>
+          Edit Shipment
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleMenuClose();
+          // Add track shipment handler
+        }}>
+          Track Shipment
+        </MenuItem>
+        {selectedShipment?.status === 'pending' && (
+          <MenuItem 
+            onClick={() => {
+              handleMenuClose();
+              handleDelete(selectedShipment.shipment_id);
+            }}
+            className="delete-option"
+          >
+            Cancel Shipment
+          </MenuItem>
+        )}
+      </Menu>
     </div>
   );
 };

@@ -6,7 +6,9 @@ const api = axios.create({
     baseURL: API_CONFIG.BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
     },
+    withCredentials: false
 });
 
 // Request interceptor for adding auth token
@@ -16,7 +18,6 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        console.log('Request:', config);
         return config;
     },
     (error) => {
@@ -28,7 +29,6 @@ api.interceptors.request.use(
 // Response interceptor for handling common errors
 api.interceptors.response.use(
     (response) => {
-        console.log('Response:', response);
         return response;
     },
     async (error) => {
@@ -42,9 +42,7 @@ const apiService = {
     // Auth methods
     login: async (credentials) => {
         try {
-            console.log('Login attempt with:', credentials);
             const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, credentials);
-            console.log('Login response:', response);
             return response;
         } catch (error) {
             console.error('Login error:', error.response || error);
@@ -58,23 +56,8 @@ const apiService = {
     },
 
     // Booking methods
-    createBooking: (bookingData) => {
-        return axios.post(`${API_CONFIG.BASE_URL}/bookings`, bookingData, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-
-    getAllBookings: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/bookings`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-
+    createBooking: (bookingData) => api.post(API_CONFIG.ENDPOINTS.BOOKINGS.CREATE, bookingData),
+    getAllBookings: () => api.get(API_CONFIG.ENDPOINTS.BOOKINGS.LIST),
     getBookingByNumber: async (bookingNumber) => {
         try {
             console.log('Fetching booking with number:', bookingNumber);
@@ -92,7 +75,6 @@ const apiService = {
             throw error;
         }
     },
-
     getBookings: () => api.get(API_CONFIG.ENDPOINTS.BOOKINGS.LIST),
     getBookingDetails: (bookingId) => api.get(`${API_CONFIG.ENDPOINTS.BOOKINGS.DETAILS}/${bookingId}`),
     updateBooking: (bookingId, bookingData) => api.put(`${API_CONFIG.ENDPOINTS.BOOKINGS.UPDATE}/${bookingId}`, bookingData),
@@ -120,140 +102,28 @@ const apiService = {
     createTicket: (ticketData) => api.post(API_CONFIG.ENDPOINTS.SUPPORT.CREATE_TICKET, ticketData),
 
     // Dashboard methods
-    getDashboardStats: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/stats`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-    getBookingTrends: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/booking-trends`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-    getServiceTypes: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/service-types`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-    getBranchPerformance: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/branch-performance`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-    getDeliveryStatus: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/delivery-status`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-    getRecentActivities: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/dashboard/recent-activities`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
+    getDashboardStats: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.STATS),
+    getBookingTrends: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.BOOKING_TRENDS),
+    getServiceTypes: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.SERVICE_TYPES),
+    getBranchPerformance: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.BRANCH_PERFORMANCE),
+    getDeliveryStatus: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.DELIVERY_STATUS),
+    getRecentActivities: () => api.get(API_CONFIG.ENDPOINTS.DASHBOARD.RECENT_ACTIVITIES),
 
     // Branch related methods
-    getBranches: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/branches`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
-
-    createBranch: (branchData) => {
-        return axios.post(`${API_CONFIG.BASE_URL}/branches`, branchData, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-
-    updateBranch: (branchId, branchData) => {
-        return axios.put(`${API_CONFIG.BASE_URL}/branches/${branchId}`, branchData, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-
-    deleteBranch: (branchId) => {
-        return axios.delete(`${API_CONFIG.BASE_URL}/branches/${branchId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
+    getBranches: () => api.get('/branches'),
+    createBranch: (branchData) => api.post('/branches', branchData),
+    updateBranch: (branchId, branchData) => api.put(`/branches/${branchId}`, branchData),
+    deleteBranch: (branchId) => api.delete(`/branches/${branchId}`),
 
     // User management methods
-    getUsers: () => {
-        return axios.get(`${API_CONFIG.BASE_URL}/users`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-
-    createUser: (userData) => {
-        return axios.post(`${API_CONFIG.BASE_URL}/users`, userData, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-
-    updateUser: (userId, userData) => {
-        return axios.put(`${API_CONFIG.BASE_URL}/users/${userId}`, userData, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    },
-
-    deleteUser: (userId) => {
-        return axios.delete(`${API_CONFIG.BASE_URL}/users/${userId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    },
+    getUsers: () => api.get('/users'),
+    createUser: (userData) => api.post('/users', userData),
+    updateUser: (userId, userData) => api.put(`/users/${userId}`, userData),
+    deleteUser: (userId) => api.delete(`/users/${userId}`),
 
     // Executive related methods
-    getExecutives: async () => {
-        try {
-            const response = await api.get(API_CONFIG.ENDPOINTS.FIELD_EXECUTIVE.LIST);
-            return response;
-        } catch (error) {
-            console.error('Error fetching executives:', error);
-            throw error;
-        }
-    },
-
-    getExecutivesByBranch: async (branchId) => {
-        try {
-            const response = await api.get(`${API_CONFIG.ENDPOINTS.FIELD_EXECUTIVE.BY_BRANCH}/${branchId}`);
-            return response;
-        } catch (error) {
-            console.error('Error fetching executives by branch:', error);
-            throw error;
-        }
-    },
+    getExecutives: () => api.get(API_CONFIG.ENDPOINTS.FIELD_EXECUTIVE.LIST),
+    getExecutivesByBranch: (branchId) => api.get(`${API_CONFIG.ENDPOINTS.FIELD_EXECUTIVE.BY_BRANCH}/${branchId}`),
 
     // Shipment methods
     createShipment: async (shipmentData) => {
@@ -262,6 +132,21 @@ const apiService = {
             return response.data;
         } catch (error) {
             console.error('Error creating shipment:', error);
+            throw error;
+        }
+    },
+
+    printShipmentLabel: async (shipmentId) => {
+        try {
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/shipments/${shipmentId}/label`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                responseType: 'blob'
+            });
+            return response;
+        } catch (error) {
+            console.error('Error printing shipment label:', error);
             throw error;
         }
     },
