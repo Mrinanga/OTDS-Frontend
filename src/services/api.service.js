@@ -393,6 +393,22 @@ const apiService = {
             throw error;
         }
     },
+
+    async getLabelData(trackingNumber) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/shipments/${trackingNumber}/label`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching label data:', error);
+            throw error;
+        }
+    },
 };
 
 export default apiService;

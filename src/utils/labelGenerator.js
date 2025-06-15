@@ -13,7 +13,7 @@ const generateShipmentLabel = (shipmentData) => {
     // Helper function to add text with auto-line breaking
     const addText = (text, x, y, maxWidth, fontSize = 10, align = 'left', lineHeight = 1.2) => {
         doc.setFontSize(fontSize);
-        const lines = doc.splitTextToSize(text, maxWidth);
+        const lines = doc.splitTextToSize(String(text), maxWidth);
         lines.forEach((line, index) => {
             let actualX = x;
             if (align === 'center') {
@@ -47,27 +47,17 @@ const generateShipmentLabel = (shipmentData) => {
 
     // Extract and format dynamic data using the new backend structure
     const { date: shipmentDate, time: shipmentTime } = formatDateTime(shipmentData.created_at);
-    const recipientName = shipmentData.recipient_customer_name || 'N/A';
-    const recipientFullAddress = [
-        shipmentData.recipient_address_line1,
-        shipmentData.recipient_po_box ? `P.o- ${shipmentData.recipient_po_box}` : '',
-        shipmentData.recipient_district ? `Dist- ${shipmentData.recipient_district}` : '',
-        shipmentData.recipient_city,
-        shipmentData.recipient_state
-    ].filter(Boolean).join(', ');
-    const recipientPin = shipmentData.recipient_pincode || 'N/A';
+    const recipientName = String(shipmentData.recipient_customer_name || 'N/A');
+    const recipientFullAddress = String(shipmentData.deliveryAddress || 'N/A');
+    // Extract PIN from the formatted deliveryAddress
+    const pincodeMatch = recipientFullAddress.match(/PIN:(\d+)$/);
+    const recipientPin = String(pincodeMatch ? pincodeMatch[1] : 'N/A');
 
-    const senderFullAddress = [
-        shipmentData.sender_address_line1,
-        shipmentData.sender_city,
-        shipmentData.sender_state,
-        `India, ${shipmentData.sender_pincode}`
-    ].filter(Boolean).join(', ');
+    const senderFullAddress = String(shipmentData.pickupAddress || 'N/A');
 
-    const productDetails = shipmentData.items && shipmentData.items.length > 0 ? shipmentData.items.map(item => item.name).join(', ') : 'N/A';
-    const itemPrice = shipmentData.items && shipmentData.items.length > 0 ? shipmentData.items[0].price : 'N/A';
-    const itemTotalPrice = shipmentData.items && shipmentData.items.length > 0 ? shipmentData.items[0].total_price : 'N/A';
-
+    const productDetails = String(shipmentData.product || 'N/A');
+    const itemPrice = String(shipmentData.amountDeclared || '0.00'); // Using amountDeclared as itemPrice
+    const itemTotalPrice = String(shipmentData.amountDeclared || '0.00'); // Using amountDeclared as itemTotalPrice
 
     // Section 1: Company Logos and Barcode 1
     const section1Height = 30;
@@ -81,7 +71,7 @@ const generateShipmentLabel = (shipmentData) => {
     doc.text('OTDS', pageWidth - margin - 2, margin + 8, { align: 'right' });
     doc.setFont('helvetica', 'normal');
 
-    const barcode1Value = shipmentData.tracking_number || 'N/A';
+    const barcode1Value = String(shipmentData.bookingNumber || 'N/A');
     let canvas1 = document.createElement('canvas');
     JsBarcode(canvas1, barcode1Value, {
         format: "CODE128",
@@ -90,13 +80,13 @@ const generateShipmentLabel = (shipmentData) => {
         height: 20,
         margin: 0
     });
-    doc.addImage(canvas1.toDataURL('image/png'), 'PNG', margin + 10, margin + 10, pageWidth - 2 * margin - 20, 15);
+    doc.addImage(canvas1.toDataURL('image/png'), 'PNG', margin + 10, margin + 10, pageWidth - 2 * margin - 20, 12);
     doc.setFontSize(8);
-    doc.text(barcode1Value, pageWidth / 2, margin + 25, { align: 'center' });
+    doc.text(String(barcode1Value), pageWidth / 2, margin + 25, { align: 'center' });
 
     doc.setFontSize(8);
-    doc.text(shipmentData.origin_branch_pincode || 'N/A', margin + 2, margin + section1Height - 4);
-    doc.text(shipmentData.origin_branch_code || 'N/A', pageWidth - margin - 2, margin + section1Height - 4, { align: 'right' });
+    doc.text(String(shipmentData.originBranchPincode || 'N/A'), margin + 2, margin + section1Height - 4);
+    doc.text(String(shipmentData.originBranchCode || 'N/A'), pageWidth - margin - 2, margin + section1Height - 4, { align: 'right' });
 
     // Section 2: Ship To & Payment Details
     const section2Height = 35;
@@ -110,17 +100,16 @@ const generateShipmentLabel = (shipmentData) => {
     addText('Ship To:', margin + 2, section2Y + 4, halfWidth - 4);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    addText(recipientName.toUpperCase(), margin + 2, section2Y + 8, halfWidth - 4);
+    let currentY = addText(recipientFullAddress.toUpperCase(), margin + 2, section2Y + 8, halfWidth - 4); // Use formatted address directly
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    let currentY = addText(recipientFullAddress, margin + 2, section2Y + 12, halfWidth - 4);
     addText(`PIN:${recipientPin}`, margin + 2, currentY + 1, halfWidth - 4);
 
     doc.setFontSize(10);
-    doc.text(shipmentData.payment_type || 'Pre-paid', margin + halfWidth + 2, section2Y + 8);
-    doc.text(shipmentData.shipping_mode || 'Surface', margin + halfWidth + 2, section2Y + 12);
+    doc.text(String(shipmentData.paymentType || 'Pre-paid'), margin + halfWidth + 2, section2Y + 8);
+    doc.text(String(shipmentData.shippingMode || 'Surface'), margin + halfWidth + 2, section2Y + 12);
     doc.setFontSize(14);
-    doc.text(`INR ${shipmentData.amount_declared || 'N/A'}`, margin + halfWidth + 2, section2Y + 20);
+    doc.text(`INR ${String(shipmentData.amountDeclared || 'N/A')}`, margin + halfWidth + 2, section2Y + 20);
 
     // Section 3: Seller & Date
     const section3Height = 25;
@@ -130,11 +119,11 @@ const generateShipmentLabel = (shipmentData) => {
 
     doc.setFontSize(9);
     addText('Seller: OTDS Logistics', margin + 2, section3Y + 4, halfWidth - 4);
-    addText(`Address: "${senderFullAddress}"`, margin + 2, section3Y + 8, halfWidth - 4);
+    addText(`Address: "${senderFullAddress}"`, margin + 2, section3Y + 8, halfWidth - 4); // Use formatted address directly
 
     doc.setFontSize(9);
-    doc.text(`Date: ${shipmentDate}`, margin + halfWidth + 2, section3Y + 8);
-    doc.text(shipmentTime, margin + halfWidth + 2, section3Y + 12);
+    doc.text(`Date: ${String(shipmentDate)}`, margin + halfWidth + 2, section3Y + 8);
+    doc.text(String(shipmentTime), margin + halfWidth + 2, section3Y + 12);
 
     // Section 4: Product Details & Price
     const section4Height = 25;
@@ -164,15 +153,15 @@ const generateShipmentLabel = (shipmentData) => {
     doc.setFontSize(10);
     doc.text('Total', margin + 2, section5Y + 8);
     doc.setFontSize(12);
-    doc.text(`INR ${shipmentData.amount_declared || 'N/A'}`, margin + halfWidth + 2, section5Y + 8);
-    doc.text(`INR ${shipmentData.amount_declared || 'N/A'}`, margin + halfWidth + halfWidth / 2 + 2, section5Y + 8);
+    doc.text(`INR ${String(shipmentData.amount_declared || 'N/A')}`, margin + halfWidth + 2, section5Y + 8);
+    doc.text(`INR ${String(shipmentData.amount_declared || 'N/A')}`, margin + halfWidth + halfWidth / 2 + 2, section5Y + 8);
 
     // Section 6: Barcode 2 & Return Address
     const section6Height = pageHeight - (section5Y + section5Height) - margin;
     const section6Y = section5Y + section5Height;
     drawBorder(margin, section6Y, pageWidth - 2 * margin, section6Height);
 
-    const barcode2Value = shipmentData.booking_number || 'N/A';
+    const barcode2Value = String(shipmentData.bookingNumber || 'N/A');
     let canvas2 = document.createElement('canvas');
     JsBarcode(canvas2, barcode2Value, {
         format: "CODE128",
@@ -181,12 +170,12 @@ const generateShipmentLabel = (shipmentData) => {
         height: 20,
         margin: 0
     });
-    doc.addImage(canvas2.toDataURL('image/png'), 'PNG', margin + 10, section6Y + 2, pageWidth - 2 * margin - 20, 15);
+    doc.addImage(canvas2.toDataURL('image/png'), 'PNG', margin + 10, section6Y + 2, pageWidth - 2 * margin - 20, 8);
     doc.setFontSize(8);
-    doc.text(barcode2Value, pageWidth / 2, section6Y + 17, { align: 'center' });
+    doc.text(String(barcode2Value), pageWidth / 2, section6Y + 17, { align: 'center' });
 
     doc.setFontSize(9);
-    addText(`Return Address: ${shipmentData.return_address || 'N/A'}`, margin + 2, section6Y + section6Height - 12, pageWidth - 2 * margin - 4);
+    addText(`Return Address: ${String(shipmentData.return_address || 'N/A')}`, margin + 2, section6Y + section6Height - 12, pageWidth - 2 * margin - 4);
 
     return doc;
 };

@@ -91,42 +91,119 @@ const ShipmentsPage = () => {
     setSelectedShipment(null);
   };
 
-  const handlePrintLabel = async (shipmentId) => {
+  const handlePrintLabel = async (shipment) => {
     try {
-      // Fetch full shipment details before generating label
-      const response = await apiService.getShipmentById(shipmentId);
+      console.log('Printing label for shipment:', shipment);
       
-      // response.data is now expected to be the single shipment object directly
-      const fullShipmentData = response.data;
-
-      // Log the full shipment data to the console for inspection
-      console.log('Full Shipment Data for Label:', fullShipmentData);
-
-      if (!fullShipmentData) {
-        setError('Shipment data not found.');
-        return;
+      // Get the label data using the new endpoint
+      const response = await apiService.getLabelData(shipment.tracking_number);
+      console.log('Label API Response:', response);
+      
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to fetch label data');
       }
 
-      const doc = generateShipmentLabel(fullShipmentData);
-      const blob = new Blob([doc.output('blob')], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const shipmentData = response.data;
+      console.log('Raw shipment data:', shipmentData);
+
+      if (!shipmentData) {
+        throw new Error('No shipment data found');
+      }
+
+      // Map the data to match the label generator's expected structure
+      const labelData = {
+        trackingNumber: shipmentData.tracking_number || 'N/A',
+        bookingNumber: shipmentData.booking_number || 'N/A',
+        date: shipmentData.created_at ? new Date(shipmentData.created_at).toLocaleDateString() : 'N/A',
+        shippingMode: shipmentData.shipping_mode || 'Surface',
+        status: shipmentData.status || 'N/A',
+        description: shipmentData.description || 'N/A',
+        specialInstructions: shipmentData.special_instructions || 'N/A',
+        
+        // Origin Branch (keep for label generator as it expects it, even if N/A)
+        originBranchName: shipmentData.origin_branch_name || 'N/A',
+        originBranchAddress: shipmentData.origin_branch_address || 'N/A',
+        originBranchCity: shipmentData.origin_branch_city || 'N/A',
+        originBranchPincode: shipmentData.origin_branch_pincode || 'N/A',
+        originBranchCode: shipmentData.origin_branch_code || 'N/A',
+        
+        // Destination Branch (keep for label generator as it expects it, even if N/A)
+        destinationBranchName: shipmentData.destination_branch_name || 'N/A',
+        destinationBranchAddress: shipmentData.destination_branch_address || 'N/A',
+        destinationBranchCity: shipmentData.destination_branch_city || 'N/A',
+        destinationBranchPincode: shipmentData.destination_branch_pincode || 'N/A',
+        destinationBranchCode: shipmentData.destination_branch_code || 'N/A',
+        
+        // Recipient (keep for label generator as it expects it, even if N/A)
+        recipientName: shipmentData.recipient_customer_name || 'N/A',
+        recipientPhone: shipmentData.recipient_phone || 'N/A',
+        recipientEmail: shipmentData.recipient_email || 'N/A',
+        recipientAddress: shipmentData.recipient_address_line1 || 'N/A',
+        recipientPoBox: shipmentData.recipient_po_box || '',
+        recipientDistrict: shipmentData.recipient_district || '',
+        recipientCity: shipmentData.recipient_city || 'N/A',
+        recipientState: shipmentData.recipient_state || 'N/A',
+        recipientPincode: shipmentData.recipient_pincode || 'N/A',
+        
+        // Sender (keep for label generator as it expects it, even if N/A)
+        senderAddress: shipmentData.sender_address_line1 || 'N/A',
+        senderCity: shipmentData.sender_city || 'N/A',
+        senderState: shipmentData.sender_state || 'N/A',
+        senderPincode: shipmentData.sender_pincode || 'N/A',
+        
+        // Order Details (keep for label generator as it expects it, even if N/A)
+        items: shipmentData.items || [],
+        amountDeclared: shipmentData.amount_declared || '0.00',
+        paymentType: shipmentData.payment_type || 'Pre-paid',
+        returnAddress: shipmentData.return_address || 'N/A',
+        product: shipmentData.package_type || 'N/A', // Map directly from package_type
+        
+        // Formatted addresses for label generator (frontend responsibility)
+        pickupAddress: [
+          shipmentData.sender_address_line1,
+          shipmentData.sender_city,
+          shipmentData.sender_state,
+          `PIN:${shipmentData.sender_pincode}`
+        ].filter(Boolean).join(', '),
+        
+        deliveryAddress: [
+          shipmentData.recipient_address_line1,
+          shipmentData.recipient_po_box ? `P.o- ${shipmentData.recipient_po_box}` : '',
+          shipmentData.recipient_district ? `Dist- ${shipmentData.recipient_district}` : '',
+          shipmentData.recipient_city,
+          shipmentData.recipient_state,
+          `PIN:${shipmentData.recipient_pincode}`
+        ].filter(Boolean).join(', ')
+      };
+
+      console.log('Mapped label data:', labelData);
+
+      // Generate PDF
+      const pdf = await generateShipmentLabel(labelData);
       
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          setTimeout(() => {
-            printWindow.print();
-            URL.revokeObjectURL(url); // Clean up the object URL
-          }, 1000); // Give it a moment to render
-        };
+      // Open PDF in new window
+      const pdfWindow = window.open('', '_blank');
+      if (pdfWindow) {
+        pdfWindow.document.write(`
+          <html>
+            <head>
+              <title>Shipment Label - ${labelData.trackingNumber}</title>
+            </head>
+            <body style="margin: 0; padding: 0;">
+              <iframe 
+                src="${pdf.output('datauristring')}" 
+                style="width: 100%; height: 100vh; border: none;"
+              ></iframe>
+            </body>
+          </html>
+        `);
+        pdfWindow.document.close();
       } else {
-        // Fallback for pop-up blockers
-        alert('Please allow pop-ups for this site to print the label.');
-        URL.revokeObjectURL(url);
+        throw new Error('Pop-up blocked. Please allow pop-ups for this site.');
       }
-    } catch (err) {
-      console.error('Error generating or printing label:', err);
-      setError(err.response?.data?.message || 'Failed to generate or print label.');
+    } catch (error) {
+      console.error('Error generating label:', error);
+      alert('Failed to generate label: ' + error.message);
     }
   };
 
@@ -194,7 +271,7 @@ const ShipmentsPage = () => {
                           variant="outlined"
                           size="small"
                           startIcon={<PrintIcon />}
-                          onClick={() => handlePrintLabel(shipment.shipment_id)}
+                          onClick={() => handlePrintLabel(shipment)}
                           className="action-button print"
                         >
                           Print Label
