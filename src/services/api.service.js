@@ -222,12 +222,30 @@ const apiService = {
         }
     },
 
-    getFilteredPickupRequests: async (status) => {
+    getPickupsByBranch: async (branchId) => {
         try {
-            const response = await api.get(`${API_CONFIG.ENDPOINTS.PICKUP.FILTER}?action=filter&status=${status}`);
+            console.log('API Service - getPickupsByBranch called with branchId:', branchId);
+            const url = `/pickuprequest/branch/${branchId}`;
+            console.log('Making request to URL:', url);
+            const response = await api.get(url);
+            console.log('API Service - getPickupsByBranch response:', response);
             return response.data;
         } catch (error) {
-            console.error('Error fetching filtered pickup requests:', error);
+            console.error('API Service - Error in getPickupsByBranch:', error);
+            throw error;
+        }
+    },
+
+    getFilteredPickupRequests: async (status) => {
+        try {
+            console.log('API Service - getFilteredPickupRequests called with status:', status);
+            const url = `${API_CONFIG.ENDPOINTS.PICKUP.FILTER}?action=filter&status=${status}`;
+            console.log('Making request to URL:', url);
+            const response = await api.get(url);
+            console.log('API Service - getFilteredPickupRequests response:', response);
+            return response.data;
+        } catch (error) {
+            console.error('API Service - Error in getFilteredPickupRequests:', error);
             throw error;
         }
     },

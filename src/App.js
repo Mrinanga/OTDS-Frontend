@@ -8,6 +8,7 @@ import BookingCourierPage from "./pages/BookingCourierPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
 import FinalDestinationPage from "./pages/FinalDestinationPage";
 import PickupPage from "./pages/PickupPage";
+import PickupPageBranchOffice from "./pages/PickupPageBranchOffice"
 import AgentsPage from "./pages/AgentsPage";
 import CustomersPage from "./pages/CustomersPage";
 import ZonesPage from "./pages/ZonesPage";
@@ -157,7 +158,7 @@ function App() {
                       <div className="main-content">
                         <BranchTopbar />
                         <div className="page-content">
-                          <PickupPage />
+                          <PickupPageBranchOffice />
                         </div>
                       </div>
                     </div>
