@@ -6,16 +6,19 @@ import "../../styles/topbar.css";
 const BranchTopbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
-  const { role, branchId } = useContext(AuthContext);
+  const { setIsAuthenticated, setRole } = useContext(AuthContext);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleLogout = () => {
     // Clear all items from localStorage
     localStorage.clear();
+    // Reset authentication state
+    setIsAuthenticated(false);
+    setRole(null);
     // Close the dropdown
     setShowDropdown(false);
     // Redirect to root route
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   return (
