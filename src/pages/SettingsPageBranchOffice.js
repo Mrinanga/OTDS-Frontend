@@ -6,7 +6,7 @@ import BranchOfficeSettings from '../components/Settings/BranchOfficeSettings';
 import PreferencesSettings from '../components/Settings/PreferencesSettings';
 import NotificationSettings from '../components/Settings/NotificationSettings';
 import SecuritySettings from '../components/Settings/SecuritySettings';
-import SystemSettings from '../components/Settings/SystemSettings';
+
 import UsersSettings from '../components/Settings/UsersSettings';
 
 const SettingsPage = () => {
@@ -32,8 +32,6 @@ const SettingsPage = () => {
             case 4:
                 return <SecuritySettings />;
             case 5:
-                return <SystemSettings />;
-            case 6:
                 return <UsersSettings />;
             default:
                 return <ProfileSettings />;
@@ -64,12 +62,11 @@ const SettingsPage = () => {
                         scrollButtons="auto"
                     >
                         <Tab label="Profile" />
-                        <Tab label="Branch Offices" />
+                        <Tab label="Branch Office Details" />
                         <Tab label="Preferences" />
                         <Tab label="Notifications" />
                         <Tab label="Security" />
-                        <Tab label="System" />
-                        <Tab label="Users" />
+                        <Tab label="Staff" />
                     </Tabs>
                 </Box>
 
