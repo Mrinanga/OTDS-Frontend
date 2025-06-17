@@ -1,17 +1,28 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../App";
+import { useUser } from "../../contexts/UserContext";
 import "../../styles/topbar.css";
 
 const BranchTopbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const { setIsAuthenticated, setRole } = useContext(AuthContext);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { userDetails, clearUserDetails } = useUser();
+
+  // Add useEffect to log user context data
+  useEffect(() => {
+    console.log('BranchTopbar - UserContext Data:', {
+      userDetails,
+      isAuthenticated: userDetails !== null,
+      branchInfo: userDetails?.branch,
+      fullUserData: userDetails
+    });
+  }, [userDetails]);
 
   const handleLogout = () => {
-    // Clear all items from localStorage
-    localStorage.clear();
+    // Clear user details using UserContext
+    clearUserDetails();
     // Reset authentication state
     setIsAuthenticated(false);
     setRole(null);
@@ -21,39 +32,42 @@ const BranchTopbar = () => {
     navigate("/", { replace: true });
   };
 
+  // Log when dropdown is toggled
+  const handleDropdownToggle = () => {
+    console.log('BranchTopbar - Dropdown Toggled:', {
+      currentState: showDropdown,
+      userDetails: userDetails
+    });
+    setShowDropdown(!showDropdown);
+  };
+
   return (
     <div className="topbar">
       <div className="topbar-left">
-        OTDS Branch Panel
-        {user.branch && (
-          <span className="branch-info">
-            - {user.branch.branch_name} ({user.branch.city})
-          </span>
-        )}
+        OTDS Branch Panel - {userDetails?.branch?.branch_name}
       </div>
       <div className="topbar-right">
-        <span className="topbar-user">
-          {user.first_name} {user.last_name}
-        </span>
+        <span className="topbar-user">OTDS-Manager</span>
         <div className="avatar-container">
           <img 
             src="./assets/avatar.png" 
-            alt="Branch Manager" 
+            alt="Admin" 
             className="topbar-avatar" 
-            onClick={() => setShowDropdown(!showDropdown)}
+            onClick={handleDropdownToggle}
           />
           {showDropdown && (
             <div className="user-dropdown">
               <div className="user-info">
-                <img src="./assets/avatar.png" alt="Branch Manager" className="dropdown-avatar" />
+                <img src="./assets/avatar.png" alt="Admin" className="dropdown-avatar" />
                 <div className="user-details">
-                  <h4>{user.first_name} {user.last_name}</h4>
-                  <p>Branch Manager</p>
-                  {user.branch && (
-                    <p className="branch-details">
-                      {user.branch.branch_name}<br />
-                      {user.branch.city}, {user.branch.state}
-                    </p>
+                  <h4>OTDS-Manager</h4>
+                  <p>Administrator</p>
+                  {userDetails?.branch && (
+                    <div className="branch-details">
+                      <h5>Branch Information</h5>
+                      <p><strong>Branch Name:</strong> {userDetails.branch.branch_name}</p>
+                      <p><strong>Location:</strong> {userDetails.branch.city}, {userDetails.branch.state}</p>
+                    </div>
                   )}
                 </div>
               </div>

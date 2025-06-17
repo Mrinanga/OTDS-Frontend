@@ -37,6 +37,51 @@ api.interceptors.response.use(
     }
 );
 
+// Dummy tracking data
+const dummyTrackingData = {
+  id: 1,
+  tracking_id: "OTDS123456789",
+  status: "in_transit",
+  current_location: "Main Branch Hub",
+  last_update: new Date().toISOString(),
+  estimated_delivery: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  recipient: {
+    name: "John Doe",
+    address: "123 Main Street, City",
+    phone: "+1234567890"
+  },
+  sender: {
+    name: "Jane Smith",
+    address: "456 Business Ave, Town",
+    phone: "+0987654321"
+  },
+  package_details: {
+    weight: "2.5 kg",
+    dimensions: "30x20x15 cm",
+    type: "Express Delivery"
+  },
+  tracking_history: [
+    {
+      status: "in_transit",
+      location: "Main Branch Hub",
+      timestamp: new Date().toISOString(),
+      description: "Package is in transit to destination"
+    },
+    {
+      status: "picked_up",
+      location: "Origin Branch",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      description: "Package picked up from sender"
+    },
+    {
+      status: "processing",
+      location: "Sorting Facility",
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      description: "Package received at sorting facility"
+    }
+  ]
+};
+
 // API service methods
 const apiService = {
     // Auth methods
@@ -461,6 +506,41 @@ const apiService = {
         } catch (error) {
             console.error('Error fetching label data:', error);
             throw error;
+        }
+    },
+
+    getLiveTracking: async (branchId) => {
+        try {
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/branch/${branchId}/live-tracking`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error('Error fetching live tracking:', error);
+            throw error;
+        }
+    },
+
+    trackShipment: async (trackingId) => {
+        try {
+            // Try to fetch from backend first
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/track/${trackingId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return response;
+        } catch (error) {
+            console.log('Using dummy tracking data for testing');
+            // Return dummy data for testing
+            return {
+                data: {
+                    ...dummyTrackingData,
+                    tracking_id: trackingId // Use the provided tracking ID
+                }
+            };
         }
     },
 };

@@ -24,13 +24,23 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
+      const storedUser = localStorage.getItem('user');
+      
+      if (token && storedUser) {
         // Set the token in axios headers
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        // Fetch user data
-        const response = await axios.get(`${API_CONFIG.BASE_URL}/customers/profile`);
-        setUser(response.data.data);
+        try {
+          // Try to fetch fresh user data
+          const response = await axios.get(`${API_CONFIG.BASE_URL}/customers/profile`);
+          setUser(response.data.data);
+        } catch (err) {
+          // If API call fails, use stored user data
+          console.log('Using stored user data due to API error:', err);
+          setUser(JSON.parse(storedUser));
+        }
+      } else {
+        setUser(null);
       }
     } catch (err) {
       console.error('Auth check failed:', err);
@@ -46,8 +56,9 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, credentials);
       const { token, user } = response.data.data;
       
-      // Store token
+      // Store token and user data
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       
       // Set axios default header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -68,8 +79,9 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMERS.CREATE}`, userData);
       const { token, user } = response.data.data;
       
-      // Store token
+      // Store token and user data
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       
       // Set axios default header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -85,8 +97,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // Remove token
+    // Remove token and user data
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     
     // Remove axios default header
     delete axios.defaults.headers.common['Authorization'];
@@ -99,8 +112,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const response = await axios.put(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMERS.UPDATE}`, profileData);
-      setUser(response.data.data);
-      return response.data.data;
+      const updatedUser = response.data.data;
+      
+      // Update stored user data
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      
+      return updatedUser;
     } catch (err) {
       setError(err.response?.data?.message || 'Profile update failed');
       throw err;
@@ -141,6 +159,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     error,
+    isAuthenticated: !!user,
     login,
     register,
     logout,

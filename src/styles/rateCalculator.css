@@ -1,7 +1,7 @@
 /* CourierRateCalculator.css */
 
 .rate-calculator {
-  max-width: 800px;
+  width: 90%;
   margin: 40px auto;
   padding: 30px;
   background: #ffffff;

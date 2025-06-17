@@ -1,17 +1,28 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../App";
+import { useUser } from "../../contexts/UserContext";
 import "../../styles/topbar.css";
 
 const Topbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const { setIsAuthenticated, setRole } = useContext(AuthContext);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { userDetails, clearUserDetails } = useUser();
+
+  // Add useEffect to log user context data
+  useEffect(() => {
+    console.log('UserContext Data:', {
+      userDetails,
+      isAuthenticated: userDetails !== null,
+      branchInfo: userDetails?.branch,
+      fullUserData: userDetails
+    });
+  }, [userDetails]);
 
   const handleLogout = () => {
-    // Clear all items from localStorage
-    localStorage.clear();
+    // Clear user details using UserContext
+    clearUserDetails();
     // Reset authentication state
     setIsAuthenticated(false);
     setRole(null);
@@ -19,6 +30,15 @@ const Topbar = () => {
     setShowDropdown(false);
     // Redirect to root route
     navigate("/", { replace: true });
+  };
+
+  // Log when dropdown is toggled
+  const handleDropdownToggle = () => {
+    console.log('Dropdown Toggled:', {
+      currentState: showDropdown,
+      userDetails: userDetails
+    });
+    setShowDropdown(!showDropdown);
   };
 
   return (
@@ -31,7 +51,7 @@ const Topbar = () => {
             src="./assets/avatar.png" 
             alt="Admin" 
             className="topbar-avatar" 
-            onClick={() => setShowDropdown(!showDropdown)}
+            onClick={handleDropdownToggle}
           />
           {showDropdown && (
             <div className="user-dropdown">
@@ -40,13 +60,11 @@ const Topbar = () => {
                 <div className="user-details">
                   <h4>OTDS-Manager</h4>
                   <p>Administrator</p>
-                  {user.branch && (
+                  {userDetails?.branch && (
                     <div className="branch-details">
                       <h5>Branch Information</h5>
-                      <p><strong>Branch Name:</strong> {user.branch.branch_name}</p>
-                      {/* <p><strong>Branch Manager:</strong> {user.branch.manager_first_name} {user.branch.manager_last_name}</p> */}
-                      {/* <p><strong>Address:</strong> {user.branch.address}</p> */}
-                      <p><strong>Location:</strong> {user.branch.city}, {user.branch.state}</p>
+                      <p><strong>Branch Name:</strong> {userDetails.branch.branch_name}</p>
+                      <p><strong>Location:</strong> {userDetails.branch.city}, {userDetails.branch.state}</p>
                     </div>
                   )}
                 </div>
