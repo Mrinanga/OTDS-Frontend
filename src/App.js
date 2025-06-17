@@ -6,6 +6,7 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import DashboardPage from "./pages/DashboardAdmin";
 import BookingCourierPage from "./pages/BookingCourierPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
+import ShipmentsPageBranchOffice from "./pages/ShipmentsPageBranchOffice";
 import FinalDestinationPage from "./pages/FinalDestinationPage";
 import PickupPage from "./pages/PickupPage";
 import PickupPageBranchOffice from "./pages/PickupPageBranchOffice"
@@ -174,7 +175,7 @@ function App() {
                       <div className="main-content">
                         <BranchTopbar />
                         <div className="page-content">
-                          <ShipmentsPage />
+                          <ShipmentsPageBranchOffice />
                         </div>
                       </div>
                     </div>

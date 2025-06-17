@@ -59,7 +59,7 @@ const FinalDestinationPage = () => {
         try {
             setLoading(true);
             console.log('Fetching shipments for branch:', branchId);
-            const response = await apiService.getShipmentsByBranch(branchId);
+            const response = await apiService.getFinalDestinationShipments(branchId);
             console.log('Shipments response:', response);
             
             if (response.data && response.data.success) {

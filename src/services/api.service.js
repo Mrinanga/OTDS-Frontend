@@ -179,6 +179,42 @@ const apiService = {
         });
     },
 
+    getShipmentsByBranch: async (branchId) => {
+        try {
+            console.log('Making API request to fetch branch shipments:', {
+                url: `${API_CONFIG.BASE_URL}/shipments/branch/${branchId}`,
+                branchId: branchId,
+                token: localStorage.getItem('token') ? 'Present' : 'Missing'
+            });
+            
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/shipments/branch/${branchId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            
+            console.log('Branch shipments API response:', {
+                status: response.status,
+                data: response.data,
+                headers: response.headers
+            });
+            
+            return response;
+        } catch (error) {
+            console.error('Error in getShipmentsByBranch:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                config: {
+                    url: error.config?.url,
+                    method: error.config?.method,
+                    headers: error.config?.headers
+                }
+            });
+            throw error;
+        }
+    },
+
     getShipmentById: (id) => {
         return axios.get(`${API_CONFIG.BASE_URL}/shipments/${id}`, {
             headers: {
@@ -382,12 +418,12 @@ const apiService = {
     },
 
     // Final Destination methods
-    getShipmentsByBranch: async (branchId) => {
+    getFinalDestinationShipments: async (branchId) => {
         try {
             const response = await api.get(`/finaldestination/shipments/${branchId}`);
             return response;
         } catch (error) {
-            console.error('Error fetching shipments:', error);
+            console.error('Error fetching final destination shipments:', error);
             throw error;
         }
     },
