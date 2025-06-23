@@ -29,13 +29,66 @@ const BookingForwardBranchModal = ({ booking, onClose, onSubmit }) => {
     setSelectedBranchId(e.target.value);
   };
 
-  const handleForward = () => {
+  const handleForward = async () => {
+    console.log('Raw booking object:', JSON.stringify(booking, null, 2));
     if (!selectedBranchId) {
       setError('Please select a branch office');
       return;
     }
-    if (onSubmit) {
-      onSubmit({ booking, branch_id: selectedBranchId });
+    setLoading(true);
+    setError('');
+    try {
+      // Unique debug log to confirm execution
+      console.log('!!! TRANSFORMATION BLOCK EXECUTED !!!');
+      // Build the normalized payload
+      const payload = {
+        service_type: booking.service_type,
+        package_type: booking.package_type,
+        weight: booking.weight,
+        package_details: {
+          dimensions: booking.dimensions,
+          quantity: booking.quantity,
+          description: booking.description,
+          special_instructions: booking.special_instructions,
+        },
+        pickup_address: {
+          name: booking.pickup_name,
+          phone: booking.pickup_phone,
+          address: booking.pickup_address,
+          city: booking.pickup_city,
+          state: booking.pickup_state,
+          country: booking.pickup_country,
+          postal_code: booking.pickup_postal_code,
+        },
+        delivery_address: {
+          name: booking.delivery_name,
+          phone: booking.delivery_phone,
+          address: booking.delivery_address,
+          city: booking.delivery_city,
+          state: booking.delivery_state,
+          country: booking.delivery_country,
+          postal_code: booking.delivery_postal_code,
+        },
+        payment_method: booking.payment_method,
+        calculated_amount: booking.calculated_amount,
+        total_amount: booking.total_amount,
+        payment_status: booking.payment_status,
+        // Add any other required fields here
+      };
+      // Debug: log the payload
+      console.log('Forwarding bookingData:', JSON.stringify(payload, null, 2));
+      const response = await apiService.forwardExternalBooking(payload, selectedBranchId);
+      if (response.data && response.data.data && response.data.data.booking_number) {
+        if (onSubmit) onSubmit(response.data.data.booking_number);
+        onClose();
+        alert(`Booking forwarded successfully! New booking number: ${response.data.data.booking_number}`);
+      } else {
+        setError('Failed to forward booking.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to forward booking.');
+    } finally {
+      setLoading(false);
     }
   };
 

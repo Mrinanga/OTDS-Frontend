@@ -378,7 +378,11 @@ const BookingCourierPage = () => {
             setShowForwardBranchModal(false);
             setForwardBranchBooking(null);
           }}
-          // onSubmit={...} // To be implemented
+          onSubmit={() => {
+            setShowForwardBranchModal(false);
+            setForwardBranchBooking(null);
+            fetchBookings();
+          }}
         />
       )}
     </div>

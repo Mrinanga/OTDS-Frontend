@@ -545,6 +545,9 @@ const apiService = {
     },
 
     getAllExternalBookings: () => api.get('/externalbookings'),
+
+    forwardExternalBooking: (booking, branch_id) =>
+      api.post('/bookings/forward-external', { ...booking, branch_id }),
 };
 
 export default apiService;
