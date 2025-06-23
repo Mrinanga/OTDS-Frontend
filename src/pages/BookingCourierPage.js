@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api.service';
 import BookingModal from '../components/BookingPage/BookingModal';
 import PickupAssignmentModal from '../components/BookingPage/PickupAssignmentModal';
+import BookingForwardBranchModal from '../components/BookingPage/BookingForwardBranchModal';
 import '../styles/booking.css';
 import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import TextField from '@mui/material/TextField';
@@ -22,22 +23,27 @@ const BookingCourierPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [showForwardBranchModal, setShowForwardBranchModal] = useState(false);
+  const [forwardBranchBooking, setForwardBranchBooking] = useState(null);
 
   useEffect(() => {
     fetchBookings();
     fetchExecutives();
-  }, []);
+  }, [filterType]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getAllBookings();
-      console.log('All bookings response:', response);
+      let response;
+      if (filterType === 'external') {
+        response = await apiService.getAllExternalBookings();
+      } else {
+        response = await apiService.getAllBookings();
+      }
+      console.log('Bookings response:', response);
       if (response.data && response.data.data) {
-        console.log('Setting bookings:', response.data.data);
         setBookings(response.data.data);
       } else {
-        console.log('No bookings data in response');
         setBookings([]);
       }
       setError('');
@@ -179,7 +185,8 @@ const BookingCourierPage = () => {
   const getFilteredBookings = () => {
     let filtered = bookings;
     if (filterType === 'external') {
-      filtered = filtered.filter(b => b.is_external);
+      // For external bookings, return all as-is
+      return bookings;
     } else if (filterType === 'main') {
       filtered = filtered.filter(b => String(b.branch_id) === '1');
     } else if (filterType === 'branch' && selectedBranchId) {
@@ -201,6 +208,11 @@ const BookingCourierPage = () => {
       filtered = filtered.filter(b => new Date(b.created_at) <= new Date(endDate));
     }
     return filtered;
+  };
+
+  const handleForwardBranch = (booking) => {
+    setForwardBranchBooking(booking);
+    setShowForwardBranchModal(true);
   };
 
   if (loading) {
@@ -308,7 +320,15 @@ const BookingCourierPage = () => {
                   <td>₹{booking.total_amount}</td>
                   <td>{new Date(booking.created_at).toLocaleDateString()}</td>
                   <td className="actions-cell">
-                    {booking.status === 'pending' && (
+                    {filterType === 'external' && booking.status === 'pending' && (
+                      <button 
+                        className="pickup-button"
+                        onClick={() => handleForwardBranch(booking)}
+                      >
+                        Forward Branch
+                      </button>
+                    )}
+                    {filterType !== 'external' && booking.status === 'pending' && (
                       <button 
                         className="pickup-button"
                         onClick={() => handleRequestPickup(booking)}
@@ -348,6 +368,17 @@ const BookingCourierPage = () => {
           }}
           onSubmit={handlePickupAssignment}
           bookingNumber={selectedBooking.booking_number}
+        />
+      )}
+
+      {showForwardBranchModal && forwardBranchBooking && (
+        <BookingForwardBranchModal
+          booking={forwardBranchBooking}
+          onClose={() => {
+            setShowForwardBranchModal(false);
+            setForwardBranchBooking(null);
+          }}
+          // onSubmit={...} // To be implemented
         />
       )}
     </div>

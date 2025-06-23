@@ -543,6 +543,8 @@ const apiService = {
             };
         }
     },
+
+    getAllExternalBookings: () => api.get('/externalbookings'),
 };
 
 export default apiService;
