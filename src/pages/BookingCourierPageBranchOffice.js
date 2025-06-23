@@ -4,8 +4,6 @@ import apiService from '../services/api.service';
 import BookingModal from '../components/BookingPage/BookingModal';
 import PickupAssignmentModal from '../components/BookingPage/PickupAssignmentModal';
 import '../styles/booking.css';
-import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
-import TextField from '@mui/material/TextField';
 
 const BookingCourierPage = () => {
   const navigate = useNavigate();
@@ -17,14 +15,10 @@ const BookingCourierPage = () => {
   const [error, setError] = useState('');
   const [branches, setBranches] = useState([]);
   const [executives, setExecutives] = useState([]);
-  const [filterType, setFilterType] = useState('main');
-  const [selectedBranchId, setSelectedBranchId] = useState('1');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchBookings();
+    fetchBranches();
     fetchExecutives();
   }, []);
 
@@ -159,50 +153,6 @@ const BookingCourierPage = () => {
     }
   };
 
-  const handleFilterChange = async (event) => {
-    const value = event.target.value;
-    setFilterType(value);
-    if (value !== 'branch') {
-      setSelectedBranchId('');
-    } else {
-      // Fetch branches only if not already loaded
-      if (branches.length === 0) {
-        await fetchBranches();
-      }
-    }
-  };
-
-  const handleBranchChange = (event) => {
-    setSelectedBranchId(event.target.value);
-  };
-
-  const getFilteredBookings = () => {
-    let filtered = bookings;
-    if (filterType === 'external') {
-      filtered = filtered.filter(b => b.is_external);
-    } else if (filterType === 'main') {
-      filtered = filtered.filter(b => String(b.branch_id) === '1');
-    } else if (filterType === 'branch' && selectedBranchId) {
-      filtered = filtered.filter(b => String(b.branch_id) === String(selectedBranchId));
-    }
-    // Search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(b =>
-        (b.booking_number && b.booking_number.toLowerCase().includes(term)) ||
-        (b.service_type && b.service_type.toLowerCase().includes(term))
-      );
-    }
-    // Date filter
-    if (startDate) {
-      filtered = filtered.filter(b => new Date(b.created_at) >= new Date(startDate));
-    }
-    if (endDate) {
-      filtered = filtered.filter(b => new Date(b.created_at) <= new Date(endDate));
-    }
-    return filtered;
-  };
-
   if (loading) {
     return (
       <div className="bookings-container">
@@ -214,76 +164,17 @@ const BookingCourierPage = () => {
   return (
     <div className="bookings-container">
       <h2 className="bookings-title">Courier Bookings</h2>
+
       {error && <div className="error-message">{error}</div>}
-      {/* Booking Button and Filter Controls Row */}
-      <div className="booking-controls-row">
-        <button className="book-button" onClick={() => setShowModal(true)}>
-          + Book a Courier
-        </button>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <FormControl size="small" style={{ minWidth: 180 }}>
-            <InputLabel id="filter-type-label">Filter Bookings</InputLabel>
-            <Select
-              labelId="filter-type-label"
-              value={filterType}
-              label="Filter Bookings"
-              onChange={handleFilterChange}
-            >
-              <MenuItem value="external">External Bookings</MenuItem>
-              <MenuItem value="main">Main Branch Bookings</MenuItem>
-              <MenuItem value="branch">Branch Bookings (by ID)</MenuItem>
-            </Select>
-          </FormControl>
-          {filterType === 'branch' && (
-            <FormControl size="small" style={{ minWidth: 150 }}>
-              <InputLabel id="branch-select-label">Select Branch</InputLabel>
-              <Select
-                labelId="branch-select-label"
-                value={selectedBranchId}
-                label="Select Branch"
-                onChange={handleBranchChange}
-              >
-                {branches
-                  .filter(branch => String(branch.branch_id) !== '1')
-                  .map(branch => (
-                    <MenuItem key={branch.branch_id} value={branch.branch_id}>
-                      {branch.branch_name} (ID: {branch.branch_id})
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-          )}
-          {/* Search Bar */}
-          <TextField
-            size="small"
-            label="Search Bookings"
-            variant="outlined"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-          {/* Date Filter */}
-          <TextField
-            size="small"
-            label="Start Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={startDate}
-            onChange={e => setStartDate(e.target.value)}
-          />
-          <TextField
-            size="small"
-            label="End Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={endDate}
-            onChange={e => setEndDate(e.target.value)}
-          />
-        </div>
-      </div>
+
+      <button className="book-button" onClick={() => setShowModal(true)}>
+        + Book a Courier
+      </button>
+
       {!bookings || bookings.length === 0 ? (
         <p className="no-bookings">No bookings yet.</p>
       ) : (
-        <div className="table-wrapper scrollable-table">
+        <div className="table-wrapper">
           <table className="bookings-table">
             <thead>
               <tr>
@@ -296,7 +187,7 @@ const BookingCourierPage = () => {
               </tr>
             </thead>
             <tbody>
-              {getFilteredBookings().map((booking) => (
+              {bookings.map((booking) => (
                 <tr key={booking.booking_number}>
                   <td>{booking.booking_number}</td>
                   <td>{booking.service_type}</td>

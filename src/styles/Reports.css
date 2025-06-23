@@ -1,6 +1,8 @@
 /* Reports.css */
 .reports-container {
   padding: 20px;
+  margin-left: 3%;
+  margin-top: 5%;
   background: #f8f9fb;
   min-height: 100vh;
   font-family: 'Segoe UI', sans-serif;

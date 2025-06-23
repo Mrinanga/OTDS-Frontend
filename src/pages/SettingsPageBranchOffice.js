@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Container, Paper, Typography, Box, CircularProgress, Alert, Tabs, Tab, Divider } from '@mui/material';
-import { AuthContext } from '../App';
+import { useAuth } from '../contexts/AuthContext';
 import ProfileSettings from '../components/Settings/ProfileSettings';
 import BranchOfficeSettings from '../components/Settings/BranchOfficeSettings';
 import PreferencesSettings from '../components/Settings/PreferencesSettings';
@@ -10,7 +10,7 @@ import SecuritySettings from '../components/Settings/SecuritySettings';
 import UsersSettings from '../components/Settings/UsersSettings';
 
 const SettingsPage = () => {
-    const { isAuthenticated } = useContext(AuthContext);
+    const { isAuthenticated } = useAuth();
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

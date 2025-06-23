@@ -4,6 +4,9 @@
   padding-top: 2rem;
   width: 95%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 85vh; /* or 100vh minus header/footer if needed */
 }
 
 .bookings-header {
@@ -410,4 +413,19 @@
 
 .submit-button:hover {
   background-color: #27ae60;
+}
+
+.table-wrapper.scrollable-table {
+  flex: 1 1 auto;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.booking-controls-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
 }

@@ -1,31 +1,31 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../App";
+import { useAuth } from "../../contexts/AuthContext";
 import { useUser } from "../../contexts/UserContext";
 import "../../styles/topbar.css";
 
 const Topbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated, setRole } = useContext(AuthContext);
+  const { logout, user: authUser } = useAuth();
   const { userDetails, clearUserDetails } = useUser();
 
   // Add useEffect to log user context data
   useEffect(() => {
-    console.log('UserContext Data:', {
+    console.log('Topbar - UserContext Data:', {
       userDetails,
+      authUser,
       isAuthenticated: userDetails !== null,
       branchInfo: userDetails?.branch,
       fullUserData: userDetails
     });
-  }, [userDetails]);
+  }, [userDetails, authUser]);
 
   const handleLogout = () => {
     // Clear user details using UserContext
     clearUserDetails();
-    // Reset authentication state
-    setIsAuthenticated(false);
-    setRole(null);
+    // Use AuthContext logout
+    logout();
     // Close the dropdown
     setShowDropdown(false);
     // Redirect to root route
@@ -34,9 +34,10 @@ const Topbar = () => {
 
   // Log when dropdown is toggled
   const handleDropdownToggle = () => {
-    console.log('Dropdown Toggled:', {
+    console.log('Topbar - Dropdown Toggled:', {
       currentState: showDropdown,
-      userDetails: userDetails
+      userDetails: userDetails,
+      authUser: authUser
     });
     setShowDropdown(!showDropdown);
   };
@@ -67,6 +68,14 @@ const Topbar = () => {
                       <p><strong>Location:</strong> {userDetails.branch.city}, {userDetails.branch.state}</p>
                     </div>
                   )}
+                  {/* Debug section - remove in production */}
+                  <div style={{ marginTop: '10px', padding: '5px', backgroundColor: '#f0f0f0', fontSize: '12px' }}>
+                    <strong>Debug Info:</strong><br/>
+                    UserContext: {userDetails ? 'Loaded' : 'Not loaded'}<br/>
+                    AuthContext: {authUser ? 'Loaded' : 'Not loaded'}<br/>
+                    User ID: {userDetails?.user_id || 'N/A'}<br/>
+                    Role: {userDetails?.role || 'N/A'}
+                  </div>
                 </div>
               </div>
               <div className="dropdown-divider"></div>

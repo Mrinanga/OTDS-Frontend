@@ -1,6 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../App";
+import { useAuth } from "../contexts/AuthContext";
 import "../styles/LoginPage.css";
 import apiService from '../services/api.service';
 
@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { setIsAuthenticated, setRole } = useContext(AuthContext);
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,13 +39,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Store auth data in localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Update auth context
-      setIsAuthenticated(true);
-      setRole(user.role);
+      // Use AuthContext login method
+      await login({ email, password });
       
       // Navigate based on role
       if (user.role === 'branch_office') {
