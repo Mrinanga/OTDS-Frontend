@@ -28,7 +28,7 @@ import { styled } from '@mui/material/styles';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(1),
   marginBottom: theme.spacing(3),
 }));
 
