@@ -25,34 +25,41 @@ const BookingCourierPage = () => {
   const [endDate, setEndDate] = useState('');
   const [showForwardBranchModal, setShowForwardBranchModal] = useState(false);
   const [forwardBranchBooking, setForwardBranchBooking] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const tableWrapperRef = React.useRef(null);
 
   useEffect(() => {
-    fetchBookings();
+    setBookings([]);
+    setPage(1);
+    setHasMore(true);
+    setIsFetchingMore(false);
+    fetchBookings(1, true);
     fetchExecutives();
   }, [filterType]);
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (pageToFetch = 1, reset = false) => {
     try {
-      setLoading(true);
+      if (pageToFetch === 1) setLoading(true);
+      else setIsFetchingMore(true);
       let response;
       if (filterType === 'external') {
-        response = await apiService.getAllExternalBookings();
+        response = await apiService.getAllExternalBookings({ page: pageToFetch, limit: 20 });
       } else {
-        response = await apiService.getAllBookings();
+        response = await apiService.getAllBookings({ page: pageToFetch, limit: 20 });
       }
-      console.log('Bookings response:', response);
-      if (response.data && response.data.data) {
-        setBookings(response.data.data);
-      } else {
-        setBookings([]);
-      }
+      const newBookings = response.data && response.data.data ? response.data.data : [];
+      setBookings(prev => reset ? newBookings : [...prev, ...newBookings]);
+      setHasMore(newBookings.length === 20);
       setError('');
     } catch (err) {
       console.error('Error fetching bookings:', err);
       setError('Failed to fetch bookings. Please try again later.');
-      setBookings([]);
+      if (pageToFetch === 1) setBookings([]);
     } finally {
-      setLoading(false);
+      if (pageToFetch === 1) setLoading(false);
+      else setIsFetchingMore(false);
     }
   };
 
@@ -215,6 +222,31 @@ const BookingCourierPage = () => {
     setShowForwardBranchModal(true);
   };
 
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const wrapper = tableWrapperRef.current;
+      if (!wrapper || loading || isFetchingMore || !hasMore) return;
+      if (wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 50) {
+        // Near bottom
+        setPage(prevPage => {
+          const nextPage = prevPage + 1;
+          fetchBookings(nextPage);
+          return nextPage;
+        });
+      }
+    };
+    const wrapper = tableWrapperRef.current;
+    if (wrapper) {
+      wrapper.addEventListener('scroll', handleScroll);
+    }
+    return () => {
+      if (wrapper) {
+        wrapper.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [loading, isFetchingMore, hasMore]);
+
   if (loading) {
     return (
       <div className="bookings-container">
@@ -295,7 +327,7 @@ const BookingCourierPage = () => {
       {!bookings || bookings.length === 0 ? (
         <p className="no-bookings">No bookings yet.</p>
       ) : (
-        <div className="table-wrapper scrollable-table">
+        <div className="table-wrapper scrollable-table" ref={tableWrapperRef} style={{  overflowY: 'auto' }}>
           <table className="bookings-table">
             <thead>
               <tr>
@@ -349,6 +381,8 @@ const BookingCourierPage = () => {
               ))}
             </tbody>
           </table>
+          {isFetchingMore && <div className="loading">Loading more...</div>}
+          {!hasMore && bookings.length > 0 && <div className="end-message">No more bookings.</div>}
         </div>
       )}
 
