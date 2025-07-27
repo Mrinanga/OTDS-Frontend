@@ -1,5 +1,5 @@
 const API_CONFIG = {
-    // BASE_URL: 'https://otdscourier.in/api',
+    // BASE_URL: 'https://otdscourier.in/OTDS-Backend/api',
     BASE_URL: 'http://localhost/OTDS-DEVELOPMENT/OTDS-Backend/api',
     ENDPOINTS: {
         AUTH: {

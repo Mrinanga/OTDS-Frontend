@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Container, Paper, Typography, Box, CircularProgress, Alert, Tabs, Tab, Divider } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileSettings from '../components/Settings/ProfileSettings';
-import BranchOfficeSettings from '../components/Settings/BranchOfficeSettings';
+import BranchOfficeSettings from '../components/Settings/BS_BranchOfficeSettings';
 import PreferencesSettings from '../components/Settings/PreferencesSettings';
 import NotificationSettings from '../components/Settings/NotificationSettings';
 import SecuritySettings from '../components/Settings/SecuritySettings';
+import StaffSettings from '../components/Settings/staffSettings'
 
-import UsersSettings from '../components/Settings/UsersSettings';
-
-const SettingsPage = () => {
+const SettingsPageBranchOffice = () => {
     const { isAuthenticated } = useAuth();
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -32,7 +31,7 @@ const SettingsPage = () => {
             case 4:
                 return <SecuritySettings />;
             case 5:
-                return <UsersSettings />;
+                return <StaffSettings />;
             default:
                 return <ProfileSettings />;
         }
@@ -84,4 +83,4 @@ const SettingsPage = () => {
     );
 };
 
-export default SettingsPage;
+export default SettingsPageBranchOffice;

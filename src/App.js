@@ -1,11 +1,12 @@
 import React, { useContext, createContext, useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { UserProvider } from './contexts/UserContext';
 
 import DashboardPage from "./pages/DashboardAdmin";
 import BookingCourierPage from "./pages/BookingCourierPage";
+import BookingCourierPageBranchOffice from "./pages/BookingCourierPageBranchOffice";
 import ShipmentsPage from "./pages/ShipmentsPage";
 import ShipmentsPageBranchOffice from "./pages/ShipmentsPageBranchOffice";
 import FinalDestinationPage from "./pages/FinalDestinationPage";
@@ -40,471 +41,517 @@ function RoleRoute({ children, allowedRole }) {
   return isAuthenticated && user?.role === allowedRole ? children : <Navigate to="/" replace />;
 }
 
+function UpdateModal({ show, onClose, currentVersion, newVersion, downloaded }) {
+  if (!show) return null;
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+    }}>
+      <div style={{ background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, textAlign: 'center' }}>
+        <h2>{downloaded ? 'Update Ready!' : 'Update Available'}</h2>
+        <p>A new version of OTDS Desktop is {downloaded ? 'ready to install' : 'available'}.</p>
+        <p>Current version: <b>{currentVersion || '-'}</b></p>
+        <p>New version: <b>{newVersion || '-'}</b></p>
+        {downloaded ? (
+          <p>Please restart the app to complete the update.</p>
+        ) : (
+          <p>The update will be downloaded in the background.</p>
+        )}
+        <button onClick={onClose} style={{ marginTop: 16 }}>Close</button>
+      </div>
+    </div>
+  );
+}
+
 function AppRoutes() {
   const { isAuthenticated, user } = useAuth();
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [updateDownloaded, setUpdateDownloaded] = useState(false);
+
+  useEffect(() => {
+    if (window.otdsUpdater) {
+      window.otdsUpdater.onUpdateAvailable((info) => {
+        setUpdateInfo(info);
+        setUpdateDownloaded(false);
+      });
+      window.otdsUpdater.onUpdateDownloaded((info) => {
+        setUpdateInfo(info);
+        setUpdateDownloaded(true);
+      });
+    }
+  }, []);
 
   return (
-    <Router>
-      {!isAuthenticated ? (
-        <LoginPage />
-      ) : (
-        <Routes>
-          {/* Public Login Route */}
-          <Route
-            path="/"
-            element={
-              user?.role === "branch_office" ? (
-                <Navigate to="/dashboard-branch" replace />
-              ) : (
-                <Navigate to="/dashboard-admin" replace />
-              )
-            }
-          />
+    <>
+      <Router>
+        {!isAuthenticated ? (
+          <LoginPage />
+        ) : (
+          <Routes>
+            {/* Public Login Route */}
+            <Route
+              path="/"
+              element={
+                user?.role === "branch_office" ? (
+                  <Navigate to="/dashboard-branch" replace />
+                ) : (
+                  <Navigate to="/dashboard-admin" replace />
+                )
+              }
+            />
 
-          {/* Protected Admin Routes */}
-          <Route
-            path="/dashboard-admin"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <DashboardAdmin />
+            {/* Protected Admin Routes */}
+            <Route
+              path="/dashboard-admin"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <DashboardAdmin />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Protected Branch Office Routes */}
-          <Route
-            path="/dashboard-branch"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <DashboardBranchOffice />
+            {/* Protected Branch Office Routes */}
+            <Route
+              path="/dashboard-branch"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <DashboardBranchOffice />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/dashboard-branch/bookings"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <BookingCourierPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard-branch/bookings"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <BookingCourierPageBranchOffice />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/dashboard-branch/pickup-requests"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <PickupPageBranchOffice />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard-branch/pickup-requests"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <PickupPageBranchOffice />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/dashboard-branch/shipments"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <ShipmentsPageBranchOffice />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard-branch/shipments"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <ShipmentsPageBranchOffice />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/dashboard-branch/finaldestination"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <FinalDestinationPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard-branch/finaldestination"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <FinalDestinationPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/dashboard-branch/ratecalculator"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <CourierRateCalculator />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard-branch/ratecalculator"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <CourierRateCalculator />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/dashboard-branch/zones"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <ZonesPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard-branch/zones"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <ZonesPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-           <Route
-            path="/dashboard-branch/billing"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <BillingPage />
+                </RoleRoute>
+              }
+            />
+             <Route
+              path="/dashboard-branch/billing"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <BillingPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
+                </RoleRoute>
+              }
+            />
 
-          <Route
-            path="/dashboard-branch/support"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <SupportPage />
+            <Route
+              path="/dashboard-branch/support"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <SupportPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-           <Route
-            path="/dashboard-branch/notifications"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <NotificationsPage />
+                </RoleRoute>
+              }
+            />
+             <Route
+              path="/dashboard-branch/notifications"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <NotificationsPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-           <Route
-            path="/dashboard-branch/reports"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <ReportsPage />
+                </RoleRoute>
+              }
+            />
+             <Route
+              path="/dashboard-branch/reports"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <ReportsPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
-           <Route
-            path="/dashboard-branch/settings"
-            element={
-              <RoleRoute allowedRole="branch_office">
-                <div className="app-container">
-                  <BranchSidebar />
-                  <div className="main-content">
-                    <BranchTopbar />
-                    <div className="page-content">
-                      <SettingsPageBranchOffice />
+                </RoleRoute>
+              }
+            />
+             <Route
+              path="/dashboard-branch/settings"
+              element={
+                <RoleRoute allowedRole="branch_office">
+                  <div className="app-container">
+                    <BranchSidebar />
+                    <div className="main-content">
+                      <BranchTopbar />
+                      <div className="page-content">
+                        <SettingsPageBranchOffice />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </RoleRoute>
-            }
-          />
+                </RoleRoute>
+              }
+            />
 
-          
+            
 
 {/* ------------------------------------------------------------------------------------------------------------- */}
 
-          {/* Other Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <DashboardPage />
+            {/* Other Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <DashboardPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/bookingcourier"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <BookingCourierPage />
+            <Route
+              path="/bookingcourier"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <BookingCourierPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/shipments"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <ShipmentsPage />
+            <Route
+              path="/shipments"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <ShipmentsPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/pickup-requests"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <PickupPage />
+            <Route
+              path="/pickup-requests"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <PickupPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/finaldestination"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <FinalDestinationPage />
+            <Route
+              path="/finaldestination"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <FinalDestinationPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/ratecalculator"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <CourierRateCalculator />
+            <Route
+              path="/ratecalculator"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <CourierRateCalculator />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/customers"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <CustomersPage />
+            <Route
+              path="/customers"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <CustomersPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/zones"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <ZonesPage />
+            <Route
+              path="/zones"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <ZonesPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/billing"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <BillingPage />
+            <Route
+              path="/billing"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <BillingPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/support"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <SupportPage />
+            <Route
+              path="/support"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <SupportPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/notifications"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <NotificationsPage />
+            <Route
+              path="/notifications"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <NotificationsPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/reports"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <ReportsPage />
+            <Route
+              path="/reports"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <ReportsPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          <Route
-            path="/settings"
-            element={
-              <PrivateRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                      <SettingsPage />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                      <Topbar />
+                      <div className="page-content">
+                        <SettingsPage />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Catch-all route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      )}
-    </Router>
+            {/* Catch-all route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
+      </Router>
+      <UpdateModal
+        show={!!updateInfo}
+        onClose={() => setUpdateInfo(null)}
+        currentVersion={updateInfo?.currentVersion}
+        newVersion={updateInfo?.newVersion}
+        downloaded={updateDownloaded}
+      />
+    </>
   );
 }
 

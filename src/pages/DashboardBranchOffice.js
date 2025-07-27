@@ -61,6 +61,7 @@ import {
 import "../styles/dashboard.css";
 import apiService from '../services/api.service';
 import { useUser } from '../contexts/UserContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -187,69 +188,95 @@ const StatCard = ({ title, value, icon, color, trend }) => (
 );
 
 const DashboardBranchOffice = () => {
+  const { user: authUser } = useAuth();
   const { user } = useUser();
+  console.log('Rendering DashboardBranchOffice', { authUser, user });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [stats, setStats] = useState(dummyStats);
-  const [recentActivities, setRecentActivities] = useState(dummyRecentActivities);
-  const [deliveryStats, setDeliveryStats] = useState(dummyDeliveryStats);
-  const [revenueData, setRevenueData] = useState(dummyRevenueData);
-  const [statusDistribution, setStatusDistribution] = useState(dummyStatusDistribution);
+  const [stats, setStats] = useState({});
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [deliveryStats, setDeliveryStats] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [statusDistribution, setStatusDistribution] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [liveTracking, setLiveTracking] = useState([]);
   const [trackingId, setTrackingId] = useState('');
   const [trackingError, setTrackingError] = useState('');
   const [selectedTracking, setSelectedTracking] = useState(null);
+  const [statsError, setStatsError] = useState(false);
+  const [activitiesError, setActivitiesError] = useState(false);
+  const [deliveryStatsError, setDeliveryStatsError] = useState(false);
+  const [revenueError, setRevenueError] = useState(false);
+  const [statusError, setStatusError] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const userData = JSON.parse(localStorage.getItem('user'));
-      const branchId = userData?.branch?.branch_id;
+      const [
+        statsResponse,
+        activitiesResponse,
+        deliveryStatsResponse,
+        revenueResponse,
+        statusResponse
+      ] = await Promise.allSettled([
+        apiService.getBranchStats(),
+        apiService.getRecentActivities(),
+        apiService.getDeliveryStats(),
+        apiService.getRevenueData(),
+        apiService.getStatusDistribution()
+      ]);
 
-      if (!branchId) {
-        throw new Error('Branch ID not found');
+      if (statsResponse.status === 'fulfilled' && statsResponse.value.data) {
+        setStats(statsResponse.value.data);
+        setStatsError(false);
+      } else {
+        setStats({});
+        setStatsError(true);
       }
-
-      try {
-        // Attempt to fetch data from backend
-        const [
-          statsResponse,
-          activitiesResponse,
-          deliveryStatsResponse,
-          revenueResponse,
-          statusResponse
-        ] = await Promise.all([
-          apiService.getBranchStats(branchId),
-          apiService.getRecentActivities(branchId),
-          apiService.getDeliveryStats(branchId),
-          apiService.getRevenueData(branchId),
-          apiService.getStatusDistribution(branchId)
-        ]);
-
-        // If we get here, backend is working
-        setStats(statsResponse.data || dummyStats);
-        setRecentActivities(activitiesResponse.data || dummyRecentActivities);
-        setDeliveryStats(deliveryStatsResponse.data || dummyDeliveryStats);
-        setRevenueData(revenueResponse.data || dummyRevenueData);
-        setStatusDistribution(statusResponse.data || dummyStatusDistribution);
-        setError(null);
-      } catch (err) {
-        // If backend fails, use dummy data
-        console.warn('Backend not available, using dummy data:', err);
-        setStats(dummyStats);
-        setRecentActivities(dummyRecentActivities);
-        setDeliveryStats(dummyDeliveryStats);
-        setRevenueData(dummyRevenueData);
-        setStatusDistribution(dummyStatusDistribution);
-        setError('Backend not available. Showing dummy data.');
+      if (activitiesResponse.status === 'fulfilled' && Array.isArray(activitiesResponse.value.data)) {
+        setRecentActivities(activitiesResponse.value.data);
+        setActivitiesError(false);
+      } else {
+        setRecentActivities([]);
+        setActivitiesError(true);
+      }
+      if (deliveryStatsResponse.status === 'fulfilled' && deliveryStatsResponse.value.data) {
+        setDeliveryStats(deliveryStatsResponse.value.data);
+        setDeliveryStatsError(false);
+      } else {
+        setDeliveryStats([]);
+        setDeliveryStatsError(true);
+      }
+      if (revenueResponse.status === 'fulfilled' && revenueResponse.value.data) {
+        setRevenueData(revenueResponse.value.data);
+        setRevenueError(false);
+      } else {
+        setRevenueData([]);
+        setRevenueError(true);
+      }
+      if (statusResponse.status === 'fulfilled' && Array.isArray(statusResponse.value.data)) {
+        setStatusDistribution(statusResponse.value.data);
+        setStatusError(false);
+      } else {
+        setStatusDistribution([]);
+        setStatusError(true);
       }
     } catch (err) {
-      setError(err.message || 'Failed to fetch dashboard data');
+      setStats({});
+      setRecentActivities([]);
+      setDeliveryStats([]);
+      setRevenueData([]);
+      setStatusDistribution([]);
+      setStatsError(true);
+      setActivitiesError(true);
+      setDeliveryStatsError(true);
+      setRevenueError(true);
+      setStatusError(true);
     } finally {
       setLoading(false);
     }
@@ -310,7 +337,7 @@ const DashboardBranchOffice = () => {
         <Grid item xs={12} md={3}>
           <StatCard
             title="Today's Deliveries"
-            value={stats.todayDeliveries}
+            value={stats.todayDeliveries ?? 0}
             icon={<LocalShipping />}
             color="#1976d2"
             trend={5}
@@ -319,7 +346,7 @@ const DashboardBranchOffice = () => {
         <Grid item xs={12} md={3}>
           <StatCard
             title="Pending Pickups"
-            value={stats.pendingPickups}
+            value={stats.pendingPickups ?? 0}
             icon={<Schedule />}
             color="#ed6c02"
             trend={-2}
@@ -328,7 +355,7 @@ const DashboardBranchOffice = () => {
         <Grid item xs={12} md={3}>
           <StatCard
             title="Total Revenue"
-            value={`₹${stats.totalRevenue.toLocaleString()}`}
+            value={`₹${(stats.totalRevenue ?? 0).toLocaleString()}`}
             icon={<AttachMoney />}
             color="#2e7d32"
             trend={8}
@@ -337,7 +364,7 @@ const DashboardBranchOffice = () => {
         <Grid item xs={12} md={3}>
           <StatCard
             title="On-Time Delivery"
-            value={`${stats.onTimeDelivery}%`}
+            value={`${stats.onTimeDelivery ?? 0}%`}
             icon={<CheckCircle />}
             color="#9c27b0"
             trend={3}
@@ -657,7 +684,7 @@ const DashboardBranchOffice = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={statusDistribution}
+                  data={Array.isArray(statusDistribution) ? statusDistribution : []}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -666,7 +693,7 @@ const DashboardBranchOffice = () => {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  {statusDistribution.map((entry, index) => (
+                  {(Array.isArray(statusDistribution) ? statusDistribution : []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -683,7 +710,7 @@ const DashboardBranchOffice = () => {
               Recent Activities
             </Typography>
             <List>
-              {recentActivities.map((activity, index) => (
+              {(Array.isArray(recentActivities) ? recentActivities : []).map((activity, index) => (
                 <React.Fragment key={index}>
                   <ListItem>
                     <ListItemIcon>

@@ -159,6 +159,7 @@ const apiService = {
     createBranch: (branchData) => api.post('/branches', branchData),
     updateBranch: (branchId, branchData) => api.put(`/branches/${branchId}`, branchData),
     deleteBranch: (branchId) => api.delete(`/branches/${branchId}`),
+    getBranch: (branchId) => api.get(`/branches/${branchId}`),
 
     // User management methods
     getUsers: () => api.get('/users'),
@@ -548,6 +549,17 @@ const apiService = {
 
     forwardExternalBooking: (booking, branch_id) =>
       api.post('/bookings/forward-external', { ...booking, branch_id }),
+
+    createFieldExecutive: (data) => api.post('/field-executive', data),
+    updateFieldExecutive: (id, data) => api.put(`/field-executive/${id}`, data),
+    deleteFieldExecutive: (id) => api.delete(`/field-executive/${id}`),
+
+    // Branch-specific dashboard methods (for authenticated branch user)
+    getBranchStats: () => api.get('/branch-dashboard/stats'),
+    getRecentActivities: () => api.get('/branch-dashboard/recent-activities'),
+    getDeliveryStats: () => api.get('/branch-dashboard/delivery-stats'),
+    getRevenueData: () => api.get('/branch-dashboard/revenue-data'),
+    getStatusDistribution: () => api.get('/branch-dashboard/status-distribution'),
 };
 
 export default apiService;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api.service';
 import BookingModal from '../components/BookingPage/BookingModal';
-import PickupAssignmentModal from '../components/BookingPage/PickupAssignmentModal';
+import BranchPickupAssignmentModal from '../components/BookingPage/BranchPickupAssignmentModal';
 import '../styles/booking.css';
 
 const BookingCourierPage = () => {
@@ -231,7 +231,7 @@ const BookingCourierPage = () => {
       )}
 
       {showPickupModal && selectedBooking?.booking_number && (
-        <PickupAssignmentModal
+        <BranchPickupAssignmentModal
           key={selectedBooking.booking_number}
           onClose={() => {
             setShowPickupModal(false);

@@ -16,8 +16,11 @@ import {
 } from "recharts";
 import "../styles/dashboard.css";
 import apiService from '../services/api.service';
+import { useAuth } from '../contexts/AuthContext';
 
 const DashboardPage = () => {
+  const { user } = useAuth();
+  console.log('Rendering DashboardAdmin', user);
   const [trackingId, setTrackingId] = useState("");
   const [trackingInfo, setTrackingInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,61 +36,56 @@ const DashboardPage = () => {
   const [deliveryStatus, setDeliveryStatus] = useState([]);
   const [activities, setActivities] = useState([]);
 
+  // Add section-specific error states
+  const [statsError, setStatsError] = useState(false);
+  const [trendsError, setTrendsError] = useState(false);
+  const [servicesError, setServicesError] = useState(false);
+  const [performanceError, setPerformanceError] = useState(false);
+  const [statusError, setStatusError] = useState(false);
+  const [activitiesError, setActivitiesError] = useState(false);
+
   const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"];
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+      setLoading(true);
+      // Remove setError(null) since we now use section errors
 
-        // Fetch all dashboard data in parallel
-        const [
-          statsResponse,
-          trendsResponse,
-          servicesResponse,
-          performanceResponse,
-          statusResponse,
-          activitiesResponse
-        ] = await Promise.all([
-          apiService.getDashboardStats(),
-          apiService.getBookingTrends(),
-          apiService.getServiceTypes(),
-          apiService.getBranchPerformance(),
-          apiService.getDeliveryStatus(),
-          apiService.getRecentActivities()
-        ]);
+      const [
+        statsResult,
+        trendsResult,
+        servicesResult,
+        performanceResult,
+        statusResult,
+        activitiesResult
+      ] = await Promise.allSettled([
+        apiService.getDashboardStats(),
+        apiService.getBookingTrends(),
+        apiService.getServiceTypes(),
+        apiService.getBranchPerformance(),
+        apiService.getDeliveryStatus(),
+        apiService.getRecentActivities()
+      ]);
 
-        console.log('Dashboard API Responses:', {
-          stats: statsResponse,
-          trends: trendsResponse,
-          services: servicesResponse,
-          performance: performanceResponse,
-          status: statusResponse,
-          activities: activitiesResponse
-        });
+      // Helper to extract data or return empty array, and set section error
+      const getData = (result, setError) => {
+        if (result.status === "fulfilled" && result.value.data?.data) {
+          setError(false);
+          return result.value.data.data;
+        } else {
+          setError(true);
+          return [];
+        }
+      };
 
-        // Update states with fetched data, ensuring we have arrays
-        setStatsCards(statsResponse.data?.data || []);
-        setBookingTrends(trendsResponse.data?.data || []);
-        setServiceTypes(servicesResponse.data?.data || []);
-        setBranchPerformance(performanceResponse.data?.data || []);
-        setDeliveryStatus(statusResponse.data?.data || []);
-        setActivities(activitiesResponse.data?.data || []);
+      setStatsCards(getData(statsResult, setStatsError));
+      setBookingTrends(getData(trendsResult, setTrendsError));
+      setServiceTypes(getData(servicesResult, setServicesError));
+      setBranchPerformance(getData(performanceResult, setPerformanceError));
+      setDeliveryStatus(getData(statusResult, setStatusError));
+      setActivities(getData(activitiesResult, setActivitiesError));
 
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data. Please try again later.');
-        // Set empty arrays for all data states in case of error
-        setStatsCards([]);
-        setBookingTrends([]);
-        setServiceTypes([]);
-        setBranchPerformance([]);
-        setDeliveryStatus([]);
-        setActivities([]);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(false);
     };
 
     fetchDashboardData();
@@ -116,11 +114,6 @@ const DashboardPage = () => {
   if (loading) {
     return <div className="loading">Loading dashboard data...</div>;
   }
-
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
-
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
@@ -129,7 +122,11 @@ const DashboardPage = () => {
       </header>
 
       <section className="cards-grid">
-        {statsCards && statsCards.length > 0 ? (
+        {statsError ? (
+          <div className="section-warning" style={{ color: 'orange' }}>
+            Failed to load statistics. Please try again later.
+          </div>
+        ) : statsCards && statsCards.length > 0 ? (
           statsCards.map((card, idx) => (
             <div key={idx} className={`card card-${card.color}`}>
               <div className="card-title">{card.title}</div>
@@ -161,7 +158,11 @@ const DashboardPage = () => {
       <section className="charts-grid">
         <div className="chart-box">
           <h2>Daily Booking Trends</h2>
-          {bookingTrends && bookingTrends.length > 0 ? (
+          {trendsError ? (
+            <div className="section-warning" style={{ color: 'orange' }}>
+              Failed to load booking trends. Please try again later.
+            </div>
+          ) : bookingTrends && bookingTrends.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={bookingTrends}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -179,7 +180,11 @@ const DashboardPage = () => {
 
         <div className="chart-box">
           <h2>Service Type Distribution</h2>
-          {serviceTypes && serviceTypes.length > 0 ? (
+          {servicesError ? (
+            <div className="section-warning" style={{ color: 'orange' }}>
+              Failed to load service type distribution. Please try again later.
+            </div>
+          ) : serviceTypes && serviceTypes.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
@@ -206,7 +211,11 @@ const DashboardPage = () => {
 
         <div className="chart-box">
           <h2>Branch Revenue Comparison</h2>
-          {branchPerformance && branchPerformance.length > 0 ? (
+          {performanceError ? (
+            <div className="section-warning" style={{ color: 'orange' }}>
+              Failed to load branch performance. Please try again later.
+            </div>
+          ) : branchPerformance && branchPerformance.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={branchPerformance}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -225,7 +234,11 @@ const DashboardPage = () => {
 
         <div className="chart-box">
           <h2>Delivery Status</h2>
-          {deliveryStatus && deliveryStatus.length > 0 ? (
+          {statusError ? (
+            <div className="section-warning" style={{ color: 'orange' }}>
+              Failed to load delivery status. Please try again later.
+            </div>
+          ) : deliveryStatus && deliveryStatus.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={deliveryStatus}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -324,11 +337,21 @@ const DashboardPage = () => {
 
       <section className="activity-section">
         <h2>Recent Activities</h2>
-        <ul className="activity-list">
-          {activities.map((item, idx) => (
-            <li key={idx} className="activity-item">{item}</li>
-          ))}
-        </ul>
+        {activitiesError ? (
+          <div className="section-warning" style={{ color: 'orange' }}>
+            Failed to load recent activities. Please try again later.
+          </div>
+        ) : (
+          <ul className="activity-list">
+            {Array.isArray(activities) && activities.map((item, idx) => (
+              <li key={idx} className="activity-item">
+                <strong>{item.title}</strong> ({item.status})<br />
+                Booking #: {item.booking_number}<br />
+                Time: {item.timestamp}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );
