@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/booking.css';
+import { FaPen } from 'react-icons/fa';
 
 const BookingModal = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -31,7 +32,9 @@ const BookingModal = ({ onClose, onSubmit }) => {
       postal_code: ''
     },
     payment_method: 'pay_on_pickup',
-    calculated_amount: 0
+    calculated_amount: 0,
+    manual_amount: '',
+    is_manual_amount: false
   });
 
   // Calculate amount based on service type, weight, and package type
@@ -76,9 +79,13 @@ const BookingModal = ({ onClose, onSubmit }) => {
     }
 
     const totalAmount = (baseAmount + weightAmount) * packageMultiplier;
+    const roundedAmount = Math.round(totalAmount);
+    
     setFormData(prev => ({
       ...prev,
-      calculated_amount: Math.round(totalAmount)
+      calculated_amount: roundedAmount,
+      // If not using manual amount, update manual_amount to match calculated
+      manual_amount: prev.is_manual_amount ? prev.manual_amount : ''
     }));
   }, [formData.service_type, formData.weight, formData.package_type]);
 
@@ -118,7 +125,7 @@ const BookingModal = ({ onClose, onSubmit }) => {
     // Prepare the data for submission
     const submissionData = {
       ...formData,
-      total_amount: formData.calculated_amount,
+      total_amount: formData.is_manual_amount ? parseFloat(formData.manual_amount) || 0 : formData.calculated_amount,
       payment_status: formData.payment_method === 'pay_now' ? 'paid' : 'pending'
     };
     
@@ -390,11 +397,52 @@ const BookingModal = ({ onClose, onSubmit }) => {
 
           <div className="form-section">
             <h3>Payment Details</h3>
-            <div className="form-group">
-              <label>Calculated Amount</label>
-              <div className="calculated-amount">
-                ₹{formData.calculated_amount}
+            
+            <div className="amount-section">
+              <h4>Amount</h4>
+              
+              <div className="form-group">
+                <div className="amount-display-container">
+                  <div className="calculated-amount amount-display">
+                    ₹{formData.calculated_amount.toLocaleString()}
+                  </div>
+                  <button
+                    type="button"
+                    className="edit-amount-btn"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      is_manual_amount: !prev.is_manual_amount,
+                      manual_amount: !prev.is_manual_amount ? prev.calculated_amount.toString() : prev.manual_amount
+                    }))}
+                    title={formData.is_manual_amount ? "Use calculated amount" : "Edit amount"}
+                  >
+                    <FaPen />
+                  </button>
+                </div>
               </div>
+
+              {formData.is_manual_amount && (
+                <div className="form-group custom-amount-group">
+                  <label className="amount-label">Custom Amount</label>
+                  <input
+                    type="number"
+                    name="manual_amount"
+                    className="custom-amount-input"
+                    value={formData.manual_amount}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      manual_amount: e.target.value
+                    }))}
+                    min="0"
+                    step="0.01"
+                    placeholder="Enter custom amount"
+                    required
+                  />
+                  <div className="amount-info">
+                    <small>Auto-calculated: ₹{formData.calculated_amount.toLocaleString()}</small>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="form-group">
